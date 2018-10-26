@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shipwreck.ClickOnce.Manifest.TestApp\Shipwreck.ClickOnce.Manifest.TestApp.csproj" />
+    <ProjectReference Include="..\Shipwreck.ClickOnce.Manifest\Shipwreck.ClickOnce.Manifest.csproj" />
+  </ItemGroup>
+</Project>
