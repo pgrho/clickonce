@@ -28,30 +28,37 @@ namespace Shipwreck.ClickOnce.Manifest
 
             XDocument xd;
             var manifest = entryPoint == null ? null : entryPoint + ".manifest";
-            var manPath = new Uri(du, manifest).LocalPath;
-            //if (File.Exists(manPath))
-            //{
-            //    xd = XDocument.Load(manPath);
-            //    var rems = xd.Root.Elements()
-            //        .Where(e => e.Name == XName.Get("dependency", ASM_V2)
-            //                || e.Name == XName.Get("file", ASM_V2)).ToList();
+            xd = CopyOrCreateManifest(du, manifest);
 
-            //    foreach (var e in rems)
-            //    {
-            //        e.Remove();
-            //    }
-            //}
-            //else
+            AddRootAssemblyIdentity(dir, entryPoint, xd);
+
+            // TODO: v1:description @v2:iconFile
+            xd.Root.Add(new XElement(XName.Get("description", ASM_V1)));
+
+            xd.Root.Add(new XElement(XName.Get("application", ASM_V2)));
+
+            AddEntryPoint(dir, entryPoint, xd);
+
+            // TODO: trustInfo
+            // TODO: dependency/dependentOS
+
             {
-                xd = new XDocument();
-                var root = new XElement(XName.Get("assembly", ASM_V1));
+                var dep = new XElement(XName.Get("dependency", ASM_V2));
+                xd.Root.Add(dep);
 
-                root.SetAttributeValue(XName.Get("schemaLocation", XSI), "urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd");
-                root.SetAttributeValue("manifestVersion", "1.0");
+                var da = new XElement(XName.Get("dependentAssembly", ASM_V2));
+                da.SetAttributeValue("dependencyType", "preRequisite");
+                da.SetAttributeValue("allowDelayedBinding", "true");
+                dep.Add(da);
 
-                xd.Add(root);
+                var ai = new XElement(XName.Get("assemblyIdentity", ASM_V2));
+                ai.SetAttributeValue("name", "Microsoft.Windows.CommonLanguageRuntime");
+                // TODO: determine assembly version
+                ai.SetAttributeValue("version", "4.0.30319.0");
+                da.Add(ai);
             }
 
+            List<XElement> files = null;
             foreach (var p in paths)
             {
                 if (manifest?.Equals(p, StringComparison.InvariantCultureIgnoreCase) == true)
@@ -80,18 +87,9 @@ namespace Shipwreck.ClickOnce.Manifest
                     var ai = new XElement(XName.Get("assemblyIdentity", ASM_V2));
                     ai.SetAttributeValue("name", name.Name);
                     ai.SetAttributeValue("version", name.Version);
-                    ai.SetAttributeValue("language", name.CultureName ?? "neutral");
-                    var keyToken = name.GetPublicKeyToken();
-                    if (keyToken != null)
-                    {
-                        ai.SetAttributeValue("publicKeyToken", string.Concat(keyToken.Select(b => b.ToString("X2"))));
-                    }
-                    ai.SetAttributeValue(
-                        "processorArchitecture",
-                        name.ProcessorArchitecture == ProcessorArchitecture.MSIL ? "msil"
-                        : name.ProcessorArchitecture == ProcessorArchitecture.X86 ? "x86"
-                        : name.ProcessorArchitecture == ProcessorArchitecture.Amd64 ? "amd64"
-                        : null);
+
+                    SetAssemblyAttributes(ai, name);
+
                     da.Add(ai);
                 }
                 else
@@ -99,13 +97,127 @@ namespace Shipwreck.ClickOnce.Manifest
                     var fe = new XElement(XName.Get("file", ASM_V2));
                     fe.SetAttributeValue("name", p.Replace('/', '\\'));
                     fe.SetAttributeValue("size", fi.Length);
-                    xd.Root.Add(fe);
+                    (files ?? (files = new List<XElement>())).Add(fe);
                 }
             }
 
-            Console.WriteLine(xd);
+            if (files != null)
+            {
+                foreach (var f in files)
+                {
+                    xd.Root.Add(f);
+                }
+            }
 
-            Console.WriteLine("Entry Point: {0}", entryPoint);
+            var todir = new DirectoryInfo(settings.ToDirectory?.Length > 0 ? Path.GetFullPath(settings.ToDirectory) : dir.FullName);
+
+            var tdu = new Uri(todir.FullName + "\\");
+
+            if (!dir.FullName.Equals(todir.FullName, StringComparison.InvariantCultureIgnoreCase))
+            {
+                foreach (var p in paths)
+                {
+                    var dest = new FileInfo(new Uri(tdu, p).LocalPath);
+                    if (!dest.Directory.Exists)
+                    {
+                        dest.Directory.Create();
+                    }
+
+                    File.Copy(new Uri(du, p).LocalPath, dest.FullName, true);
+                }
+            }
+            xd.Save(new Uri(tdu, manifest).LocalPath);
+        }
+
+        private static void AddEntryPoint(DirectoryInfo dir, string entryPoint, XDocument xd)
+        {
+            var epe = new XElement(XName.Get("entryPoint", ASM_V2));
+            xd.Root.Add(epe);
+
+            var ai = new XElement(XName.Get("assemblyIdentity", ASM_V2));
+            var fi = new FileInfo(Path.Combine(dir.FullName, entryPoint));
+            var asm = Assembly.ReflectionOnlyLoadFrom(fi.FullName);
+            var name = asm.GetName();
+            ai.SetAttributeValue("name", name.Name);
+            ai.SetAttributeValue("version", name.Version.ToString());
+            SetAssemblyAttributes(ai, name);
+            epe.Add(ai);
+
+            var cl = new XElement(XName.Get("commandLine", ASM_V2));
+            cl.SetAttributeValue("file", entryPoint);
+            // TODO: parameters
+            cl.SetAttributeValue("parameters", "");
+            epe.Add(cl);
+        }
+
+        private static XDocument CopyOrCreateManifest(Uri du, string manifest)
+        {
+            XDocument xd;
+            var manPath = new Uri(du, manifest).LocalPath;
+            //if (File.Exists(manPath))
+            //{
+            //    xd = XDocument.Load(manPath);
+            //    var rems = xd.Root.Elements()
+            //        .Where(e => e.Name == XName.Get("dependency", ASM_V2)
+            //                || e.Name == XName.Get("file", ASM_V2)).ToList();
+
+            //    foreach (var e in rems)
+            //    {
+            //        e.Remove();
+            //    }
+            //}
+            //else
+            {
+                xd = new XDocument();
+                var root = new XElement(
+                    XName.Get("assembly", ASM_V1),
+                    new XAttribute("xmlns", ASM_V2),
+                    new XAttribute(XNamespace.Xmlns + "asmv1", ASM_V1));
+
+                root.SetAttributeValue(XName.Get("schemaLocation", XSI), "urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd");
+                root.SetAttributeValue("manifestVersion", "1.0");
+
+                xd.Add(root);
+            }
+
+            return xd;
+        }
+
+        private static void AddRootAssemblyIdentity(DirectoryInfo dir, string entryPoint, XDocument xd)
+        {
+            var rootAsmElem = new XElement(XName.Get("assemblyIdentity", ASM_V1));
+            rootAsmElem.SetAttributeValue("name", entryPoint?.Replace('/', '\\'));
+            // TODO: application version
+            rootAsmElem.SetAttributeValue("version", "1.0.0.0");
+            rootAsmElem.SetAttributeValue("type", "win32");
+
+            var fi = new FileInfo(Path.Combine(dir.FullName, entryPoint));
+            var asm = Assembly.ReflectionOnlyLoadFrom(fi.FullName);
+            var name = asm.GetName();
+
+            SetAssemblyAttributes(rootAsmElem, name, true);
+
+            xd.Root.Add(rootAsmElem);
+        }
+
+        private static void SetAssemblyAttributes(XElement ai, AssemblyName name, bool emptyKeyToken = false)
+        {
+            ai.SetAttributeValue("language", name.CultureName?.Length > 0 ? name.CultureName : "neutral");
+            var keyToken = name.GetPublicKeyToken();
+            if (keyToken?.Length == 8)
+            {
+                ai.SetAttributeValue("publicKeyToken", string.Concat(keyToken.Select(b => b.ToString("X2"))));
+            }
+            else if (emptyKeyToken)
+            {
+                ai.SetAttributeValue("publicKeyToken", "0000000000000000");
+            }
+            ai.SetAttributeValue(
+                "processorArchitecture",
+                name.ProcessorArchitecture == ProcessorArchitecture.MSIL ? "msil"
+                : name.ProcessorArchitecture == ProcessorArchitecture.X86 ? "x86"
+                : name.ProcessorArchitecture == ProcessorArchitecture.Amd64 ? "amd64"
+                : null);
         }
 
         private static List<string> GetIncludedFilePaths(DirectoryInfo dir, ApplicationManifestSettings settings)

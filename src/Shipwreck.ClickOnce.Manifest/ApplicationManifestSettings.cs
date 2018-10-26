@@ -11,7 +11,7 @@ namespace Shipwreck.ClickOnce.Manifest
             = { "**" };
 
         private static readonly string[] DefaultExclude
-            = { @"**/*.pdb", "app.publish/**" };
+            = { @"**/*.pdb", "**/*.application", "app.publish/**" };
 
         private readonly Collection<string> _Include;
 
