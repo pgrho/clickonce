@@ -13,7 +13,8 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
             var settings = new ApplicationManifestSettings()
             {
                 FromDirectory = dir,
-                ToDirectory = "../../../publish"
+                ToDirectory = "../../../publish",
+                Version = new Version(1, 2, 3, 4)
             };
 
             settings.Include.Add("!**/*.xml");

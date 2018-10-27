@@ -10,9 +10,9 @@ namespace Shipwreck.ClickOnce.Manifest
 {
     public class ApplicationManifestGenerator
     {
-        private const string XSI = "http://www.w3.org/2001/XMLSchema-instance";
-        private const string ASM_V1 = "urn:schemas-microsoft-com:asm.v1";
-        private const string ASM_V2 = "urn:schemas-microsoft-com:asm.v2";
+        protected static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        protected static readonly XNamespace AsmV1 = "urn:schemas-microsoft-com:asm.v1";
+        protected static readonly XNamespace AsmV2 = "urn:schemas-microsoft-com:asm.v2";
 
         private static readonly Regex _EntryPointPattern
             = new Regex(@"^[^/]+\.exe$", RegexOptions.IgnoreCase);
@@ -142,24 +142,27 @@ namespace Shipwreck.ClickOnce.Manifest
             if (File.Exists(manPath))
             {
                 xd = XDocument.Load(manPath);
+
+                var dependency = AsmV2 + "dependency";
+                var file = AsmV2 + "file";
+
                 var rems = xd.Root.Elements()
-                    .Where(e => e.Name == XName.Get("dependency", ASM_V2)
-                                || e.Name == XName.Get("file", ASM_V2)).ToList();
+                    .Where(e => e.Name == dependency || e.Name == file).ToList();
 
                 foreach (var e in rems)
                 {
                     e.Remove();
                 }
             }
-            //else
+            else
             {
                 xd = new XDocument();
                 var root = new XElement(
-                    XName.Get("assembly", ASM_V1),
-                    new XAttribute("xmlns", ASM_V2),
-                    new XAttribute(XNamespace.Xmlns + "asmv1", ASM_V1));
+                    AsmV1 + "assembly",
+                    new XAttribute("xmlns", AsmV2.NamespaceName),
+                    new XAttribute(XNamespace.Xmlns + "asmv1", AsmV1.NamespaceName));
 
-                root.SetAttributeValue(XName.Get("schemaLocation", XSI), "urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd");
+                root.SetAttributeValue(Xsi + "schemaLocation", "urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd");
                 root.SetAttributeValue("manifestVersion", "1.0");
 
                 xd.Add(root);
@@ -214,72 +217,79 @@ namespace Shipwreck.ClickOnce.Manifest
             GenerateFrameworkDependencies();
         }
 
+        protected XElement GetOrAddElement(XElement parent, XName name)
+        {
+            var e = parent.Element(name);
+            if (e == null)
+            {
+                e = new XElement(name);
+                parent.Add(e);
+            }
+            return e;
+        }
+
         private void GenerateAssemblyIdentityElement()
         {
             if (EntryPointPath != null)
             {
-                var rootAsmElem = new XElement(XName.Get("assemblyIdentity", ASM_V1));
-                rootAsmElem.SetAttributeValue("name", EntryPointPath.Replace('/', '\\'));
+                var e = GetOrAddElement(Document.Root, AsmV1 + "assemblyIdentity");
+
+                e.SetAttributeValue("name", EntryPointPath.Replace('/', '\\'));
                 // TODO: application version
-                rootAsmElem.SetAttributeValue("type", "win32");
+                e.SetAttributeValue("type", "win32");
 
                 var fi = new FileInfo(Path.Combine(FromDirectory.FullName, EntryPointPath));
                 var asm = Assembly.ReflectionOnlyLoadFrom(fi.FullName);
                 var name = asm.GetName();
 
-                rootAsmElem.SetAttributeValue("version", Settings.Version?.ToString() ?? "1.0.0.0");
-                SetAssemblyAttributes(rootAsmElem, name, true);
-
-                Document.Root.Add(rootAsmElem);
+                e.SetAttributeValue("version", Settings.Version?.ToString() ?? "1.0.0.0");
+                SetAssemblyAttributes(e, name, true);
             }
         }
 
         private void GenerateApplicationElement()
         {
-            Document.Root.Add(new XElement(XName.Get("application", ASM_V2)));
+            GetOrAddElement(Document.Root, AsmV2 + "application");
         }
 
         private void GenerateDescriptionElement()
         {
             // TODO: v1:description @v2:iconFile
-            Document.Root.Add(new XElement(XName.Get("description", ASM_V1)));
+            GetOrAddElement(Document.Root, AsmV1 + "description");
         }
 
         private void GenerateEntryPointElement()
         {
             if (EntryPointPath != null)
             {
-                var epe = new XElement(XName.Get("entryPoint", ASM_V2));
-                Document.Root.Add(epe);
+                var epe = GetOrAddElement(Document.Root, AsmV2 + "entryPoint");
 
-                var ai = new XElement(XName.Get("assemblyIdentity", ASM_V2));
+                var ai = GetOrAddElement(epe, AsmV2 + "assemblyIdentity");
                 var fi = new FileInfo(Path.Combine(FromDirectory.FullName, EntryPointPath));
                 var asm = Assembly.ReflectionOnlyLoadFrom(fi.FullName);
                 var name = asm.GetName();
                 ai.SetAttributeValue("name", name.Name);
                 ai.SetAttributeValue("version", name.Version.ToString());
                 SetAssemblyAttributes(ai, name);
-                epe.Add(ai);
 
-                var cl = new XElement(XName.Get("commandLine", ASM_V2));
+                var cl = GetOrAddElement(epe, AsmV2 + "commandLine");
                 cl.SetAttributeValue("file", EntryPointPath);
                 // TODO: parameters
                 cl.SetAttributeValue("parameters", "");
-                epe.Add(cl);
             }
         }
 
         private void GenerateFrameworkDependencies()
         {
-            var dep = new XElement(XName.Get("dependency", ASM_V2));
+            var dep = new XElement(AsmV2 + "dependency");
             Document.Root.Add(dep);
 
-            var da = new XElement(XName.Get("dependentAssembly", ASM_V2));
+            var da = new XElement(AsmV2 + "dependentAssembly");
             da.SetAttributeValue("dependencyType", "preRequisite");
             da.SetAttributeValue("allowDelayedBinding", "true");
             dep.Add(da);
 
-            var ai = new XElement(XName.Get("assemblyIdentity", ASM_V2));
+            var ai = new XElement(AsmV2 + "assemblyIdentity");
             ai.SetAttributeValue("name", "Microsoft.Windows.CommonLanguageRuntime");
             // TODO: determine assembly version
             ai.SetAttributeValue("version", "4.0.30319.0");
@@ -331,15 +341,15 @@ namespace Shipwreck.ClickOnce.Manifest
             var asm = Assembly.ReflectionOnlyLoadFrom(file.FullName);
             var name = asm.GetName();
 
-            var dep = new XElement(XName.Get("dependency", ASM_V2));
+            var dep = new XElement(AsmV2 + "dependency");
 
-            var da = new XElement(XName.Get("dependentAssembly", ASM_V2));
+            var da = new XElement(AsmV2 + "dependentAssembly");
             da.SetAttributeValue("dependencyType", "install");
             da.SetAttributeValue("allowDelayedBinding", "true");
             da.SetAttributeValue("codebase", path.Replace('/', '\\'));
             da.SetAttributeValue("size", file.Length);
 
-            var ai = new XElement(XName.Get("assemblyIdentity", ASM_V2));
+            var ai = new XElement(AsmV2 + "assemblyIdentity");
             ai.SetAttributeValue("name", name.Name);
             ai.SetAttributeValue("version", name.Version);
 
@@ -352,7 +362,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private static XElement CreateFileElement(string p, FileInfo fi)
         {
-            var fe = new XElement(XName.Get("file", ASM_V2));
+            var fe = new XElement(AsmV2 + "file");
             fe.SetAttributeValue("name", p.Replace('/', '\\'));
             fe.SetAttributeValue("size", fi.Length);
             return fe;
