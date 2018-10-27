@@ -33,6 +33,14 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public string ToDirectory { get; set; }
 
+        [DefaultValue(false)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool DeleteDirectory { get; set; }
+
+        [DefaultValue(false)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool Overwrite { get; set; }
+
         [DefaultValue(null)]
         [DataMember(EmitDefaultValue = false)]
         public string EntryPoint { get; set; }

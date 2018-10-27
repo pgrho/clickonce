@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,6 +11,9 @@ namespace Shipwreck.ClickOnce.Manifest
 {
     public class ApplicationManifestGenerator
     {
+        protected static readonly TraceSource TraceSource
+            = new TraceSource(typeof(ApplicationManifestGenerator).Namespace);
+
         protected static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
         protected static readonly XNamespace AsmV1 = "urn:schemas-microsoft-com:asm.v1";
         protected static readonly XNamespace AsmV2 = "urn:schemas-microsoft-com:asm.v2";
@@ -18,9 +22,7 @@ namespace Shipwreck.ClickOnce.Manifest
             = new Regex(@"^[^/]+\.exe$", RegexOptions.IgnoreCase);
 
         public ApplicationManifestGenerator(ApplicationManifestSettings settings)
-        {
-            Settings = settings;
-        }
+            => Settings = settings;
 
         protected ApplicationManifestSettings Settings { get; }
 
@@ -51,6 +53,8 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private List<string> GetIncludedFilePaths()
         {
+            TraceSource.TraceInformation("Searching files from {0}", FromDirectory.FullName);
+
             var include = Minimatch.Compile(Settings.Include);
             var exclude = Minimatch.Compile(Settings.Exclude);
 
@@ -63,6 +67,8 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 if (include(path) && !exclude(path))
                 {
+                    TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Found: {0}", path);
+
                     paths.Add(path);
                 }
             }
@@ -247,10 +253,7 @@ namespace Shipwreck.ClickOnce.Manifest
             }
         }
 
-        private void GenerateApplicationElement()
-        {
-            GetOrAddElement(Document.Root, AsmV2 + "application");
-        }
+        private void GenerateApplicationElement() => GetOrAddElement(Document.Root, AsmV2 + "application");
 
         private void GenerateDescriptionElement()
         {
@@ -394,22 +397,33 @@ namespace Shipwreck.ClickOnce.Manifest
         {
             if (!FromDirectory.FullName.Equals(ToDirectory.FullName, StringComparison.InvariantCultureIgnoreCase))
             {
+                if (Settings.DeleteDirectory)
+                {
+                    TraceSource.TraceInformation("Removing Directory :{0}", ToDirectory.FullName);
+                    ToDirectory.Delete(true);
+                }
+
                 foreach (var p in IncludedFilePaths)
                 {
                     var dest = new FileInfo(new Uri(ToDirectoryUri, p).LocalPath);
                     if (!dest.Directory.Exists)
                     {
+                        TraceSource.TraceInformation("Creating Directory :{0}", dest.Directory.FullName);
                         dest.Directory.Create();
                     }
 
-                    File.Copy(new Uri(FromDirectoryUri, p).LocalPath, dest.FullName, true);
+                    TraceSource.TraceInformation("Copying file :{0}", p);
+                    File.Copy(new Uri(FromDirectoryUri, p).LocalPath, dest.FullName, Settings.Overwrite);
                 }
             }
         }
 
         private void SaveDocument()
         {
-            Document.Save(new Uri(ToDirectoryUri, ManifestPath).LocalPath);
+            var p = new Uri(ToDirectoryUri, ManifestPath).LocalPath;
+            TraceSource.TraceInformation("Writing Manifest to {0}", p);
+            TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Manifest Content: {0}", Document);
+            Document.Save(p);
         }
     }
 }

@@ -6,15 +6,13 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
     {
         private static void Main(string[] args)
         {
-            var dir = new Uri(new Uri(typeof(Program).Assembly.Location), "../../../../Shipwreck.ClickOnce.Manifest.TestApp/bin/Release").LocalPath;
-
-            Console.WriteLine(dir);
-
             var settings = new ApplicationManifestSettings()
             {
-                FromDirectory = dir,
+                FromDirectory = "../../../../Shipwreck.ClickOnce.Manifest.TestApp/bin/Release",
                 ToDirectory = "../../../publish",
-                Version = new Version(1, 2, 3, 4)
+                Version = new Version(1, 2, 3, 4),
+                DeleteDirectory = true,
+                Overwrite = true
             };
 
             settings.Include.Add("!**/*.xml");
