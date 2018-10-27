@@ -17,8 +17,9 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
             };
 
             settings.Include.Add("!**/*.xml");
+            settings.Include.Add("!System.Data.SQLite.dll.config");
 
-            ApplicationManifestGenerator.Generate(settings);
+            new ApplicationManifestGenerator(settings).Generate();
 
             Console.ReadKey();
         }

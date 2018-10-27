@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Shipwreck.ClickOnce.Manifest
 {
+    [DataContract]
     public class ApplicationManifestSettings
     {
         private static readonly string[] DefaultInclude
@@ -13,34 +16,36 @@ namespace Shipwreck.ClickOnce.Manifest
         private static readonly string[] DefaultExclude
             = { @"**/*.pdb", "**/*.application", "app.publish/**" };
 
-        private readonly Collection<string> _Include;
-
-        private readonly Collection<string> _Exclude;
-
         public ApplicationManifestSettings()
         {
             _Include = new Collection<string>();
-            foreach (var s in DefaultInclude)
-            {
-                _Include.Add(s);
-            }
+            Include = DefaultInclude;
 
             _Exclude = new Collection<string>();
-            foreach (var s in DefaultExclude)
-            {
-                _Exclude.Add(s);
-            }
+            Exclude = DefaultExclude;
         }
 
         [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
         public string FromDirectory { get; set; }
 
         [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
         public string ToDirectory { get; set; }
 
         [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
         public string EntryPoint { get; set; }
 
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public Version Version { get; set; }
+
+        #region Include
+
+        private readonly Collection<string> _Include;
+
+        [DataMember(EmitDefaultValue = false)]
         public IList<string> Include
         {
             get => _Include;
@@ -63,6 +68,13 @@ namespace Shipwreck.ClickOnce.Manifest
         public void ResetInclude()
             => Include = DefaultInclude;
 
+        #endregion Include
+
+        #region Exclude
+
+        private readonly Collection<string> _Exclude;
+
+        [DataMember(EmitDefaultValue = false)]
         public IList<string> Exclude
         {
             get => _Exclude;
@@ -84,5 +96,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         public void ResetExclude()
             => Exclude = DefaultExclude;
+
+        #endregion Exclude
     }
 }
