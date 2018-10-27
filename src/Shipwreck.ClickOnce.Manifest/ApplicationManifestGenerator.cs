@@ -9,74 +9,19 @@ using System.Xml.Linq;
 
 namespace Shipwreck.ClickOnce.Manifest
 {
-    public class ApplicationManifestGenerator
+    public class ApplicationManifestGenerator : ManifestGenerator
     {
-        protected static readonly TraceSource TraceSource
-            = new TraceSource(typeof(ApplicationManifestGenerator).Namespace);
-
-        protected static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
-        protected static readonly XNamespace AsmV1 = "urn:schemas-microsoft-com:asm.v1";
-        protected static readonly XNamespace AsmV2 = "urn:schemas-microsoft-com:asm.v2";
-
         private static readonly Regex _EntryPointPattern
             = new Regex(@"^[^/]+\.exe$", RegexOptions.IgnoreCase);
 
         public ApplicationManifestGenerator(ApplicationManifestSettings settings)
-            => Settings = settings;
+            : base(settings)
+        { }
 
-        protected ApplicationManifestSettings Settings { get; }
+        protected new ApplicationManifestSettings Settings
+            => (ApplicationManifestSettings)base.Settings;
 
         #region Input Properties
-
-        #region FromDirectory
-
-        private DirectoryInfo _FromDirectory;
-
-        protected DirectoryInfo FromDirectory
-            => _FromDirectory ?? (_FromDirectory = new DirectoryInfo(Settings.FromDirectory?.Length > 0 ? Settings.FromDirectory : Environment.CurrentDirectory));
-
-        #endregion FromDirectory
-
-        #region FromDirectoryUri
-
-        private Uri _FromDirectoryUri;
-
-        protected Uri FromDirectoryUri
-            => _FromDirectoryUri ?? (_FromDirectoryUri = new Uri(FromDirectory.FullName + '\\'));
-
-        #endregion FromDirectoryUri
-
-        #region IncludedFilePaths
-
-        private List<string> _IncludedFilePaths;
-        protected List<string> IncludedFilePaths => _IncludedFilePaths ?? (_IncludedFilePaths = GetIncludedFilePaths());
-
-        private List<string> GetIncludedFilePaths()
-        {
-            TraceSource.TraceInformation("Searching files from {0}", FromDirectory.FullName);
-
-            var include = Minimatch.Compile(Settings.Include);
-            var exclude = Minimatch.Compile(Settings.Exclude);
-
-            var paths = new List<string>();
-
-            foreach (var f in FromDirectory.EnumerateFiles("*", SearchOption.AllDirectories))
-            {
-                var fu = new Uri(f.FullName);
-                var path = Uri.UnescapeDataString(FromDirectoryUri.MakeRelativeUri(fu).ToString());
-
-                if (include(path) && !exclude(path))
-                {
-                    TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Found: {0}", path);
-
-                    paths.Add(path);
-                }
-            }
-
-            return paths;
-        }
-
-        #endregion IncludedFilePaths
 
         #region EntryPointPath
 
@@ -135,13 +80,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #region Output Properties
 
-        #region Document
-
-        private XDocument _Document;
-
-        protected XDocument Document => _Document ?? (_Document = CopyOrCreateManifestDocument());
-
-        private XDocument CopyOrCreateManifestDocument()
+        protected override XDocument CopyOrCreateManifestDocument()
         {
             XDocument xd;
             var manPath = new Uri(FromDirectoryUri, ManifestPath).LocalPath;
@@ -162,38 +101,11 @@ namespace Shipwreck.ClickOnce.Manifest
             }
             else
             {
-                xd = new XDocument();
-                var root = new XElement(
-                    AsmV1 + "assembly",
-                    new XAttribute("xmlns", AsmV2.NamespaceName),
-                    new XAttribute(XNamespace.Xmlns + "asmv1", AsmV1.NamespaceName));
-
-                root.SetAttributeValue(Xsi + "schemaLocation", "urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd");
-                root.SetAttributeValue("manifestVersion", "1.0");
-
-                xd.Add(root);
+                xd = base.CopyOrCreateManifestDocument();
             }
 
             return xd;
         }
-
-        #endregion Document
-
-        #region ToDirectory
-
-        private DirectoryInfo _ToDirectory;
-
-        protected DirectoryInfo ToDirectory
-            => _ToDirectory ?? (_ToDirectory = new DirectoryInfo(Settings.ToDirectory?.Length > 0 ? Path.GetFullPath(Settings.ToDirectory) : FromDirectory.FullName));
-
-        #endregion ToDirectory
-
-        #region ToDirectoryUri
-
-        private Uri _ToDirectoryUri;
-        protected Uri ToDirectoryUri => _ToDirectoryUri ?? (_ToDirectoryUri = new Uri(ToDirectory.FullName + "\\"));
-
-        #endregion ToDirectoryUri
 
         #endregion Output Properties
 
@@ -249,7 +161,7 @@ namespace Shipwreck.ClickOnce.Manifest
                 var name = asm.GetName();
 
                 e.SetAttributeValue("version", Settings.Version?.ToString() ?? "1.0.0.0");
-                SetAssemblyAttributes(e, name, true);
+                SetAssemblyAttributes(e, name, emptyKeyToken: true, lowercase: true);
             }
         }
 
@@ -371,13 +283,14 @@ namespace Shipwreck.ClickOnce.Manifest
             return fe;
         }
 
-        private static void SetAssemblyAttributes(XElement ai, AssemblyName name, bool emptyKeyToken = false)
+        private static void SetAssemblyAttributes(XElement ai, AssemblyName name, bool emptyKeyToken = false, bool lowercase = false)
         {
             ai.SetAttributeValue("language", name.CultureName?.Length > 0 ? name.CultureName : "neutral");
             var keyToken = name.GetPublicKeyToken();
             if (keyToken?.Length == 8)
             {
-                ai.SetAttributeValue("publicKeyToken", string.Concat(keyToken.Select(b => b.ToString("X2"))));
+                var f = lowercase ? "x2" : "X2";
+                ai.SetAttributeValue("publicKeyToken", string.Concat(keyToken.Select(b => b.ToString(f))));
             }
             else if (emptyKeyToken)
             {
@@ -393,32 +306,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #endregion GeneratePathElements
 
-        private void CopyFiles()
-        {
-            if (!FromDirectory.FullName.Equals(ToDirectory.FullName, StringComparison.InvariantCultureIgnoreCase))
-            {
-                if (Settings.DeleteDirectory)
-                {
-                    TraceSource.TraceInformation("Removing Directory :{0}", ToDirectory.FullName);
-                    ToDirectory.Delete(true);
-                }
-
-                foreach (var p in IncludedFilePaths)
-                {
-                    var dest = new FileInfo(new Uri(ToDirectoryUri, p).LocalPath);
-                    if (!dest.Directory.Exists)
-                    {
-                        TraceSource.TraceInformation("Creating Directory :{0}", dest.Directory.FullName);
-                        dest.Directory.Create();
-                    }
-
-                    TraceSource.TraceInformation("Copying file :{0}", p);
-                    File.Copy(new Uri(FromDirectoryUri, p).LocalPath, dest.FullName, Settings.Overwrite);
-                }
-            }
-        }
-
-        private void SaveDocument()
+        protected virtual void SaveDocument()
         {
             var p = new Uri(ToDirectoryUri, ManifestPath).LocalPath;
             TraceSource.TraceInformation("Writing Manifest to {0}", p);

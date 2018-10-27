@@ -9,7 +9,7 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
             var settings = new ApplicationManifestSettings()
             {
                 FromDirectory = "../../../../Shipwreck.ClickOnce.Manifest.TestApp/bin/Release",
-                ToDirectory = "../../../publish",
+                ToDirectory = "../../../publish/Application Files/TestApp_1_2_3_4",
                 Version = new Version(1, 2, 3, 4),
                 DeleteDirectory = true,
                 Overwrite = true
