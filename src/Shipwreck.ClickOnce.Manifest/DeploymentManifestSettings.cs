@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.ComponentModel;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Shipwreck.ClickOnce.Manifest
@@ -8,6 +9,37 @@ namespace Shipwreck.ClickOnce.Manifest
     {
         private static readonly string[] DefaultInclude
             = { "**/*.manifest" };
+
+        public DeploymentManifestSettings() 
+            => Include = DefaultInclude;
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string ApplicationManifest { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string ApplicationName { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string Publisher { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string SuiteName { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string Product { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string SupportUrl { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string ErrorReportUrl { get; set; }
 
         #region Include
 

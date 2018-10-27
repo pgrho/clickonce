@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Xml.Linq;
 
 namespace Shipwreck.ClickOnce.Manifest
@@ -72,6 +73,17 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #endregion IncludedFilePaths
 
+        #region ManifestPath
+
+        private string _ManifestPath;
+
+        protected string ManifestPath
+            => _ManifestPath ?? (_ManifestPath = GetManifestPath());
+
+        protected abstract string GetManifestPath();
+
+        #endregion ManifestPath
+
         #endregion Input Properties
 
         #region Output Properties
@@ -88,6 +100,7 @@ namespace Shipwreck.ClickOnce.Manifest
             var root = new XElement(
                 AsmV1 + "assembly",
                 new XAttribute("xmlns", AsmV2.NamespaceName),
+                new XAttribute(XNamespace.Xmlns + "xsi", Xsi.NamespaceName),
                 new XAttribute(XNamespace.Xmlns + "asmv1", AsmV1.NamespaceName));
 
             root.SetAttributeValue(Xsi + "schemaLocation", "urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd");
@@ -118,6 +131,107 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #endregion Output Properties
 
+        protected XElement GetOrAddAssemblyIdentityElement(
+            string name = null,
+            string version = null,
+            string language = null,
+            string processorArchitecture = null,
+            string publicKeyToken = null,
+            string type = null)
+        {
+            var e = Document.Root.GetOrAdd(AsmV1 + "assemblyIdentity");
+
+            e.SetAttributeValue("name", name);
+            e.SetAttributeValue("version", version);
+            e.SetAttributeValue("language", language);
+            e.SetAttributeValue("processorArchitecture", processorArchitecture);
+            e.SetAttributeValue("publicKeyToken", publicKeyToken);
+            e.SetAttributeValue("type", type);
+
+            return e;
+        }
+
+        #region GeneratePathElements
+
+        protected virtual void GeneratePathElements()
+        {
+            List<XElement> files = null;
+            foreach (var p in IncludedFilePaths)
+            {
+                if (ManifestPath?.Equals(p, StringComparison.InvariantCultureIgnoreCase) == true)
+                {
+                    continue;
+                }
+
+                var fi = new FileInfo(new Uri(FromDirectoryUri, p).LocalPath);
+
+                if (p.EndsWith(".exe") || p.EndsWith(".dll"))
+                {
+                    try
+                    {
+                        Document.Root.Add(CreateDependencyElement(fi, p));
+                        continue;
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                (files ?? (files = new List<XElement>())).Add(CreateFileElement(p, fi));
+            }
+
+            if (files != null)
+            {
+                foreach (var f in files)
+                {
+                    Document.Root.Add(f);
+                }
+            }
+        }
+
+        protected virtual XElement CreateDependencyElement(FileInfo file, string path)
+        {
+            var asm = Assembly.ReflectionOnlyLoadFrom(file.FullName);
+            var name = asm.GetName();
+
+            var dep = new XElement(AsmV2 + "dependency");
+
+            var da = new XElement(AsmV2 + "dependentAssembly");
+            da.SetAttributeValue("dependencyType", "install");
+            da.SetAttributeValue("allowDelayedBinding", "true");
+            da.SetAttributeValue("codebase", path.Replace('/', '\\'));
+            da.SetAttributeValue("size", file.Length);
+
+            var ai = new XElement(AsmV2 + "assemblyIdentity");
+            ai.SetAttributeValue("name", name.Name);
+            ai.SetAttributeValue("version", name.Version);
+
+            SetAssemblyAttributes(ai, name);
+
+            dep.Add(da);
+            da.Add(ai);
+            return dep;
+        }
+
+        protected virtual XElement CreateFileElement(string p, FileInfo fi)
+        {
+            var fe = new XElement(AsmV2 + "file");
+            fe.SetAttributeValue("name", p.Replace('/', '\\'));
+            fe.SetAttributeValue("size", fi.Length);
+            return fe;
+        }
+
+        protected static void SetAssemblyAttributes(XElement ai, AssemblyName name)
+        {
+            ai.SetAttributeValue("language", name.CultureName?.Length > 0 ? name.CultureName : "neutral");
+            ai.SetAttributeValue("publicKeyToken", name.GetPublicKeyToken().ToAttributeValue());
+            ai.SetAttributeValue(
+                "processorArchitecture",
+                name.ProcessorArchitecture.ToAttributeValue());
+        }
+
+        #endregion GeneratePathElements
+
         protected virtual void CopyFiles()
         {
             if (!FromDirectory.FullName.Equals(ToDirectory.FullName, StringComparison.InvariantCultureIgnoreCase))
@@ -142,5 +256,7 @@ namespace Shipwreck.ClickOnce.Manifest
                 }
             }
         }
+
+        protected abstract void SaveDocument();
     }
 }

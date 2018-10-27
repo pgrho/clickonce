@@ -29,6 +29,11 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>false</MapFileExtensions>
     <InstallUrl>http://never.shipwreck.jp/clickonce/</InstallUrl>
+    <SupportUrl>http://never.shipwreck.jp/</SupportUrl>
+    <ErrorReportUrl>http://never.shipwreck.jp/</ErrorReportUrl>
+    <ProductName>Test Product</ProductName>
+    <PublisherName>Test Publisher</PublisherName>
+    <SuiteName>Test Suite</SuiteName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
     <ApplicationRevision>4</ApplicationRevision>
     <ApplicationVersion>1.2.3.4</ApplicationVersion>
