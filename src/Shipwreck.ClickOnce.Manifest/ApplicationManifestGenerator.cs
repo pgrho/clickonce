@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -122,8 +121,8 @@ namespace Shipwreck.ClickOnce.Manifest
             GenerateApplicationElement();
             GenerateEntryPointElement();
 
-            // TODO: trustInfo
-            // TODO: dependency/dependentOS
+            GenerateTrustInfoElement();
+            GenerateDependentOsElement();
 
             GenerateFrameworkDependencies();
         }
@@ -176,21 +175,56 @@ namespace Shipwreck.ClickOnce.Manifest
             }
         }
 
+        private void GenerateTrustInfoElement()
+        {
+            var ti = Document.Root.GetOrAdd(AsmV2 + "trustInfo");
+
+            // As PermissionSet element never accept xmlns or prefix, set xmlns in its ancestor.
+            // TODO: Simplify Output XML's prefix
+            ti.SetAttributeValue("xmlns", AsmV2.NamespaceName);
+
+            var sec = ti.GetOrAdd(AsmV2 + "security");
+
+            var min = sec.GetOrAdd(AsmV2 + "applicationRequestMinimum");
+
+            var ps = min.GetOrAdd(AsmV2 + "PermissionSet");
+            ps.SetAttributeValue("Unrestricted", "true");
+            ps.SetAttributeValue("ID", "Custom");
+            ps.SetAttributeValue("SameSite", "site");
+
+            var dar = min.GetOrAdd(AsmV2 + "defaultAssemblyRequest");
+            dar.SetAttributeValue("permissionSetReference", "Custom");
+
+            var el = sec.GetOrAdd(AsmV3 + "requestedPrivileges")
+                .GetOrAdd(AsmV3 + "requestedExecutionLevel");
+            el.SetAttributeValue("level", "asInvoker");
+            el.SetAttributeValue("uiAccess", "false");
+        }
+
+        private void GenerateDependentOsElement()
+        {
+            var os = Document.Root.GetOrAdd(AsmV2 + "dependency")
+                .GetOrAdd(AsmV2 + "dependentOS")
+                .GetOrAdd(AsmV2 + "osVersionInfo")
+                .GetOrAdd(AsmV2 + "os");
+
+            os.SetAttributeValue("majorVersion", 5);
+            os.SetAttributeValue("minorVersion", 1);
+            os.SetAttributeValue("buildNumber", 2600);
+            os.SetAttributeValue("servicePackMajor", 0);
+        }
+
         private void GenerateFrameworkDependencies()
         {
-            var dep = new XElement(AsmV2 + "dependency");
-            Document.Root.Add(dep);
-
-            var da = new XElement(AsmV2 + "dependentAssembly");
+            var da = Document.Root.AddElement(AsmV2 + "dependency")
+                                .AddElement(AsmV2 + "dependentAssembly");
             da.SetAttributeValue("dependencyType", "preRequisite");
             da.SetAttributeValue("allowDelayedBinding", "true");
-            dep.Add(da);
 
-            var ai = new XElement(AsmV2 + "assemblyIdentity");
+            var ai = da.AddElement(AsmV2 + "assemblyIdentity");
             ai.SetAttributeValue("name", "Microsoft.Windows.CommonLanguageRuntime");
             // TODO: determine assembly version
             ai.SetAttributeValue("version", "4.0.30319.0");
-            da.Add(ai);
         }
 
         #endregion GenerateMetadataElements

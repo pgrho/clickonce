@@ -12,9 +12,10 @@ namespace Shipwreck.ClickOnce.Manifest
         protected static readonly TraceSource TraceSource
             = new TraceSource(typeof(ApplicationManifestGenerator).Namespace);
 
-        protected static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
-        protected static readonly XNamespace AsmV1 = "urn:schemas-microsoft-com:asm.v1";
-        protected static readonly XNamespace AsmV2 = "urn:schemas-microsoft-com:asm.v2";
+        protected internal static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
+        protected internal static readonly XNamespace AsmV1 = "urn:schemas-microsoft-com:asm.v1";
+        protected internal static readonly XNamespace AsmV2 = "urn:schemas-microsoft-com:asm.v2";
+        protected internal static readonly XNamespace AsmV3 = "urn:schemas-microsoft-com:asm.v3";
 
         protected ManifestGenerator(ManifestSettings settings)
             => Settings = settings;
@@ -193,20 +194,18 @@ namespace Shipwreck.ClickOnce.Manifest
 
             var dep = new XElement(AsmV2 + "dependency");
 
-            var da = new XElement(AsmV2 + "dependentAssembly");
+            var da = dep.AddElement(AsmV2 + "dependentAssembly");
             da.SetAttributeValue("dependencyType", "install");
             da.SetAttributeValue("allowDelayedBinding", "true");
             da.SetAttributeValue("codebase", path.Replace('/', '\\'));
             da.SetAttributeValue("size", file.Length);
 
-            var ai = new XElement(AsmV2 + "assemblyIdentity");
+            var ai = da.AddElement(AsmV2 + "assemblyIdentity");
             ai.SetAttributeValue("name", name.Name);
             ai.SetAttributeValue("version", name.Version);
 
             SetAssemblyAttributes(ai, name);
 
-            dep.Add(da);
-            da.Add(ai);
             return dep;
         }
 

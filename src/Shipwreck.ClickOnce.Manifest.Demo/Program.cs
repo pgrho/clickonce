@@ -35,7 +35,10 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
                     SuiteName = "Test Suite",
                     Product = "Test Product",
                     SupportUrl = "http://never.shipwreck.jp/support",
-                    ErrorReportUrl = "http://never.shipwreck.jp/errorReport"
+                    ErrorReportUrl = "http://never.shipwreck.jp/errorReport",
+
+                    Install = true,
+                    CreateDesktopShortcut = true
                 };
 
                 new DeploymentManifestGenerator(settings).Generate();
