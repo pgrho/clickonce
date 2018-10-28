@@ -10,8 +10,10 @@ namespace Shipwreck.ClickOnce.Manifest
         private static readonly string[] DefaultInclude
             = { "**/*.manifest" };
 
-        public DeploymentManifestSettings() 
+        public DeploymentManifestSettings()
             => Include = DefaultInclude;
+
+        #region Description Properties
 
         [DefaultValue(null)]
         [DataMember(EmitDefaultValue = false)]
@@ -40,6 +42,24 @@ namespace Shipwreck.ClickOnce.Manifest
         [DefaultValue(null)]
         [DataMember(EmitDefaultValue = false)]
         public string ErrorReportUrl { get; set; }
+
+        #endregion Description Properties
+
+        #region Deployment Properties
+
+        [DefaultValue(false)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool Install { get; set; }
+
+        [DefaultValue(false)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool CreateDesktopShortcut { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string CodeBaseFolder { get; set; }
+
+        #endregion Deployment Properties
 
         #region Include
 

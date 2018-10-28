@@ -137,7 +137,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 GetOrAddAssemblyIdentityElement(
                     name: EntryPointPath.Replace('/', '\\'),
-                    version: name.Version?.ToString() ?? "1.0.0.0",
+                    version: (Settings.Version ?? name.Version)?.ToString() ?? "1.0.0.0",
                     language: name.CultureName?.Length > 0 ? name.CultureName : "neutral",
                     processorArchitecture: name.ProcessorArchitecture.ToAttributeValue(),
                     publicKeyToken: name.GetPublicKeyToken().ToAttributeValue(true) ?? "0000000000000000",
@@ -193,6 +193,12 @@ namespace Shipwreck.ClickOnce.Manifest
         }
 
         #endregion GenerateMetadataElements
+
+        protected override void GeneratePathElements()
+            => AddPathElements(
+                ManifestPath != null
+                    ? IncludedFilePaths.Except(new[] { ManifestPath }, StringComparer.InvariantCultureIgnoreCase)
+                    : IncludedFilePaths);
 
         protected override void SaveDocument()
         {

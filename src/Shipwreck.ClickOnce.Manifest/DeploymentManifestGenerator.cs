@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -98,6 +99,7 @@ namespace Shipwreck.ClickOnce.Manifest
         {
             GenerateAssemblyIdentityElement();
             GenerateDescriptionElement();
+            GenerateDeploymentElement();
 
             // TODO: deployment
             // TODO: compatibleFrameworks
@@ -111,7 +113,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 GetOrAddAssemblyIdentityElement(
                     name: ApplicationName + ".application",
-                    version: Settings.Version?.ToString() ?? "1.0.0.0",
+                    version: Settings.Version?.ToString() ?? ai?.Attribute("version")?.Value ?? "1.0.0.0",
                     language: ai?.Attribute("language")?.Value,
                     processorArchitecture: ai?.Attribute("processorArchitecture")?.Value,
                     publicKeyToken: ai?.Attribute("publicKeyToken")?.Value);
@@ -127,6 +129,55 @@ namespace Shipwreck.ClickOnce.Manifest
             e.SetAttributeValue(AsmV2 + "product", Settings.Product ?? ApplicationName);
             e.SetAttributeValue(AsmV2 + "supportUrl", Settings.SupportUrl);
             e.SetAttributeValue(ClickOnceV1 + "errorReportUrl", Settings.ErrorReportUrl);
+        }
+
+        protected void GenerateDeploymentElement()
+        {
+            var e = Document.Root.GetOrAdd(AsmV2 + "deployment");
+
+            e.SetAttributeValue("install", Settings.Install.ToAttributeValue());
+            e.SetAttributeValue(ClickOnceV1 + "createDesktopShortcut", Settings.CreateDesktopShortcut.ToAttributeValue());
+
+            var f = Settings.CodeBaseFolder;
+            if (f?.Length > 0)
+            {
+                e.GetOrAdd(AsmV2 + "deploymentProvider")
+                    .SetAttributeValue(
+                        "codebase",
+                        f
+                        + (f.Last() == '/'
+                           || f.Last() == '\\' ? null
+                            : f.StartsWith("http:")
+                              || f.StartsWith("https:")
+                              || f.StartsWith("ftp:")
+                              || f.StartsWith("ftps:") ? "/" : "\\")
+                        + ApplicationName
+                        + ".application");
+            }
+        }
+
+        protected override void GeneratePathElements()
+        {
+            var da = Document.Root.GetOrAdd(AsmV2 + "dependency")
+                    .GetOrAdd(AsmV2 + "dependentAssembly");
+
+            var mp = Uri.UnescapeDataString(ToDirectoryUri.MakeRelativeUri(new Uri(FromDirectoryUri, ManifestPath)).ToString()).Replace('/', '\\');
+
+            da.SetAttributeValue("dependencyType", "install");
+            da.SetAttributeValue("codebase", mp);
+            da.SetAttributeValue("size", new FileInfo(new Uri(FromDirectoryUri, ManifestPath).LocalPath).Length);
+
+            var sai = Document.Root.Element(AsmV1 + "assemblyIdentity");
+
+            var ai = da.GetOrAdd(AsmV2 + "assemblyIdentity");
+            ai.SetAttributeValue("name", Path.GetFileNameWithoutExtension(ManifestPath));
+
+            ai.SetAttributeValue("version", sai?.Attribute("version")?.Value);
+            ai.SetAttributeValue("publicKeyToken", sai?.Attribute("publicKeyToken")?.Value);
+            ai.SetAttributeValue("language", sai?.Attribute("language")?.Value);
+            ai.SetAttributeValue("processorArchitecture", sai?.Attribute("processorArchitecture")?.Value);
+
+            ai.SetAttributeValue("type", "win32");
         }
 
         protected override void SaveDocument()

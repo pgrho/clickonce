@@ -7,7 +7,8 @@ namespace Shipwreck.ClickOnce.Manifest
     internal static class AssemblyNameHelper
     {
         public static string ToAttributeValue(this byte[] array, bool lowercase = false)
-            => array?.Aggregate(new StringBuilder(), (sb, b) => sb.Append(b.ToString(lowercase ? "x2" : "X2"))).ToString();
+            => array?.Length > 0 ? array.Aggregate(new StringBuilder(), (sb, b) => sb.Append(b.ToString(lowercase ? "x2" : "X2"))).ToString()
+            : null;
 
         public static string ToAttributeValue(this ProcessorArchitecture processorArchitecture)
             => processorArchitecture == ProcessorArchitecture.MSIL ? "msil"

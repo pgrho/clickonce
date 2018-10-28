@@ -37,7 +37,7 @@ namespace Shipwreck.ClickOnce.Manifest
         private Uri _FromDirectoryUri;
 
         protected Uri FromDirectoryUri
-            => _FromDirectoryUri ?? (_FromDirectoryUri = new Uri(FromDirectory.FullName + '\\'));
+            => _FromDirectoryUri ?? (_FromDirectoryUri = new Uri(FromDirectory.FullName.Trim('/', '\\') + '\\'));
 
         #endregion FromDirectoryUri
 
@@ -125,7 +125,7 @@ namespace Shipwreck.ClickOnce.Manifest
         #region ToDirectoryUri
 
         private Uri _ToDirectoryUri;
-        protected Uri ToDirectoryUri => _ToDirectoryUri ?? (_ToDirectoryUri = new Uri(ToDirectory.FullName + "\\"));
+        protected Uri ToDirectoryUri => _ToDirectoryUri ?? (_ToDirectoryUri = new Uri(ToDirectory.FullName.Trim('/', '\\') + "\\"));
 
         #endregion ToDirectoryUri
 
@@ -153,16 +153,13 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #region GeneratePathElements
 
-        protected virtual void GeneratePathElements()
+        protected abstract void GeneratePathElements();
+
+        protected void AddPathElements(IEnumerable<string> paths)
         {
             List<XElement> files = null;
-            foreach (var p in IncludedFilePaths)
+            foreach (var p in paths)
             {
-                if (ManifestPath?.Equals(p, StringComparison.InvariantCultureIgnoreCase) == true)
-                {
-                    continue;
-                }
-
                 var fi = new FileInfo(new Uri(FromDirectoryUri, p).LocalPath);
 
                 if (p.EndsWith(".exe") || p.EndsWith(".dll"))

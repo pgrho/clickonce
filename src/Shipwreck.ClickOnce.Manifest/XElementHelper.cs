@@ -14,5 +14,8 @@ namespace Shipwreck.ClickOnce.Manifest
             }
             return e;
         }
+
+        public static string ToAttributeValue(this bool b) 
+            => b ? "true" : "false";
     }
 }
