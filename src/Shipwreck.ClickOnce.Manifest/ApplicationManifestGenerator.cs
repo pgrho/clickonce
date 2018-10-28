@@ -82,9 +82,10 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 var dependency = AsmV2 + "dependency";
                 var file = AsmV2 + "file";
+                var trustInfo = AsmV2 + "trustInfo";
 
                 var rems = xd.Root.Elements()
-                    .Where(e => e.Name == dependency || e.Name == file).ToList();
+                    .Where(e => e.Name == dependency || e.Name == file || e.Name == trustInfo).ToList();
 
                 foreach (var e in rems)
                 {

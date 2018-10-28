@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -10,6 +12,8 @@ namespace Shipwreck.ClickOnce.Manifest
     public class DeploymentManifestGenerator : ManifestGenerator
     {
         protected static readonly XNamespace ClickOnceV1 = "urn:schemas-microsoft-com:clickonce.v1";
+
+        protected static readonly XNamespace ClickOnceV2 = "urn:schemas-microsoft-com:clickonce.v2";
 
         private static readonly Regex _ManifestPattern
             = new Regex(@"^[^/]+\.manifest$", RegexOptions.IgnoreCase);
@@ -100,9 +104,7 @@ namespace Shipwreck.ClickOnce.Manifest
             GenerateAssemblyIdentityElement();
             GenerateDescriptionElement();
             GenerateDeploymentElement();
-
-            // TODO: deployment
-            // TODO: compatibleFrameworks
+            GenerateCompatibleFrameworksElement();
         }
 
         protected void GenerateAssemblyIdentityElement()
@@ -154,6 +156,58 @@ namespace Shipwreck.ClickOnce.Manifest
                         + ApplicationName
                         + ".application");
             }
+        }
+
+        protected void GenerateCompatibleFrameworksElement()
+        {
+            IEnumerable<CompatibleFramework> cfs = Settings.CompatibleFrameworks;
+            if (!cfs.Any())
+            {
+                var mp = new Uri(FromDirectoryUri, ManifestPath).LocalPath;
+                var cp = Path.Combine(Path.GetDirectoryName(mp), Path.ChangeExtension(mp, ".config"));
+
+                if (File.Exists(cp))
+                {
+                    var cd = XDocument.Load(cp);
+
+                    var sre = cd.Element("configuration")?.Element("startup")?.Element("supportedRuntime");
+                    if (sre != null)
+                    {
+                        var v = sre.Attribute("version")?.Value;
+                        var sku = sre.Attribute("sku")?.Value;
+
+                        if (v?.Length > 0 && sku?.Length > 0)
+                        {
+                            var sps = sku.Split(',').Select(e => e.Trim());
+
+                            var cf = new CompatibleFramework()
+                            {
+                                SupportedRuntime = v == "v4.0" ? "4.0.30319" : v.TrimStart('v'),
+                                Profile = sps.FirstOrDefault(e => e.StartsWith("Profile="))?.Substring(8) ?? "Full",
+                                TargetVersion = sps.FirstOrDefault(e => e.StartsWith("Version="))?.Substring(8).TrimStart('v')
+                            };
+
+                            cfs = new[] { cf };
+                        }
+                    }
+                }
+            }
+
+            if (cfs.Any())
+            {
+                var pe = Document.Root.GetOrAdd(ClickOnceV2 + "compatibleFrameworks");
+
+                foreach (var cf in cfs)
+                {
+                    var ce = new XElement(ClickOnceV2 + "framework");
+                    ce.SetAttributeValue("targetVersion", cf.TargetVersion);
+                    ce.SetAttributeValue("profile", cf.Profile);
+                    ce.SetAttributeValue("supportedRuntime", cf.SupportedRuntime);
+
+                    pe.Add(ce);
+                }
+            }
+
         }
 
         protected override void GeneratePathElements()
