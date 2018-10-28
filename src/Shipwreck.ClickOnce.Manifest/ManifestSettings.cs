@@ -2,19 +2,16 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Shipwreck.ClickOnce.Manifest
 {
     [DataContract]
+    [KnownType(typeof(ApplicationManifestSettings))]
+    [KnownType(typeof(DeploymentManifestSettings))]
     public abstract class ManifestSettings
     {
-        public ManifestSettings()
-        {
-            _Include = new Collection<string>();
-            _Exclude = new Collection<string>();
-        }
-
         [DefaultValue(null)]
         [DataMember(EmitDefaultValue = false)]
         public string FromDirectory { get; set; }
@@ -37,47 +34,65 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #region Include
 
-        private readonly Collection<string> _Include;
+        private Collection<string> _Include;
 
         [DataMember(EmitDefaultValue = false)]
         public IList<string> Include
         {
-            get => _Include;
+            get => _Include ?? (_Include = new Collection<string>());
             set
             {
                 if (_Include != value)
                 {
-                    _Include.Clear();
-                    foreach (var s in value)
+                    _Include?.Clear();
+                    if (value != null)
                     {
-                        _Include.Add(s);
+                        foreach (var s in value)
+                        {
+                            Include.Add(s);
+                        }
                     }
                 }
             }
         }
+
+        public virtual bool ShouldSerializeInclude()
+            => Include.Any();
+
+        public virtual void ResetInclude()
+            => Include.Clear();
 
         #endregion Include
 
         #region Exclude
 
-        private readonly Collection<string> _Exclude;
+        private Collection<string> _Exclude;
 
         [DataMember(EmitDefaultValue = false)]
         public IList<string> Exclude
         {
-            get => _Exclude;
+            get => _Exclude ?? (_Exclude = new Collection<string>());
             set
             {
                 if (_Exclude != value)
                 {
-                    _Exclude.Clear();
-                    foreach (var s in value)
+                    _Exclude?.Clear();
+                    if (value != null)
                     {
-                        _Exclude.Add(s);
+                        foreach (var s in value)
+                        {
+                            Exclude.Add(s);
+                        }
                     }
                 }
             }
         }
+
+        public virtual bool ShouldSerializeExclude()
+            => Exclude.Any();
+
+        public virtual void ResetExclude()
+            => Exclude.Clear();
 
         #endregion Exclude
     }

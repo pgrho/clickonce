@@ -5,18 +5,12 @@ using System.Runtime.Serialization;
 namespace Shipwreck.ClickOnce.Manifest
 {
     [DataContract]
-    public class ApplicationManifestSettings : ManifestSettings
+    public class PublishSettings : DeploymentManifestSettings
     {
-        internal static readonly string[] DefaultInclude
-            = { "**" };
-
-        internal static readonly string[] DefaultExclude
-            = { @"**/*.pdb", "**/*.application", "app.publish/**" };
-
-        public ApplicationManifestSettings()
+        public PublishSettings()
         {
-            Include = DefaultInclude;
-            Exclude = DefaultExclude;
+            Include = ApplicationManifestSettings.DefaultInclude;
+            Exclude = ApplicationManifestSettings.DefaultExclude;
         }
 
         [DefaultValue(null)]
@@ -30,20 +24,20 @@ namespace Shipwreck.ClickOnce.Manifest
         #region Include
 
         public override bool ShouldSerializeInclude()
-            => Include.SequenceEqual(DefaultInclude);
+            => Include.SequenceEqual(ApplicationManifestSettings.DefaultInclude);
 
         public override void ResetInclude()
-            => Include = DefaultInclude;
+            => Include = ApplicationManifestSettings.DefaultInclude;
 
         #endregion Include
 
         #region Exclude
 
         public override bool ShouldSerializeExclude()
-            => Exclude.SequenceEqual(DefaultExclude);
+            => Exclude.SequenceEqual(ApplicationManifestSettings.DefaultExclude);
 
         public override void ResetExclude()
-            => Exclude = DefaultExclude;
+            => Exclude = ApplicationManifestSettings.DefaultExclude;
 
         #endregion Exclude
     }

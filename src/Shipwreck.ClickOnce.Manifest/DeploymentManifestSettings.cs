@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -8,7 +9,7 @@ namespace Shipwreck.ClickOnce.Manifest
     [DataContract]
     public class DeploymentManifestSettings : ManifestSettings
     {
-        private static readonly string[] DefaultInclude
+        internal static readonly string[] DefaultInclude
             = { "**/*.manifest" };
 
         public DeploymentManifestSettings()
@@ -64,23 +65,22 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #region CompatibleFrameworks
 
-        private readonly Collection<CompatibleFramework> _CompatibleFrameworks
-            = new Collection<CompatibleFramework>();
+        private Collection<CompatibleFramework> _CompatibleFrameworks;
 
         [DataMember(EmitDefaultValue = false)]
-        public Collection<CompatibleFramework> CompatibleFrameworks
+        public IList<CompatibleFramework> CompatibleFrameworks
         {
-            get => _CompatibleFrameworks;
+            get => _CompatibleFrameworks ?? (_CompatibleFrameworks = new Collection<CompatibleFramework>());
             set
             {
                 if (value != _CompatibleFrameworks)
                 {
-                    _CompatibleFrameworks.Clear();
+                    _CompatibleFrameworks?.Clear();
                     if (value != null)
                     {
                         foreach (var c in value)
                         {
-                            _CompatibleFrameworks.Add(c);
+                            CompatibleFrameworks.Add(c);
                         }
                     }
                 }
@@ -97,22 +97,12 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #region Include
 
-        public bool ShouldSerializeInclude()
+        public override bool ShouldSerializeInclude()
             => Include.SequenceEqual(DefaultInclude);
 
-        public void ResetInclude()
+        public override void ResetInclude()
             => Include = DefaultInclude;
 
         #endregion Include
-
-        #region Exclude
-
-        public bool ShouldSerializeExclude()
-            => Exclude.Any();
-
-        public void ResetExclude()
-            => Exclude.Clear();
-
-        #endregion Exclude
     }
 }

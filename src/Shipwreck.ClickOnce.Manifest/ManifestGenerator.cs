@@ -10,7 +10,7 @@ namespace Shipwreck.ClickOnce.Manifest
 {
     public abstract class ManifestGenerator
     {
-        protected static readonly TraceSource TraceSource
+        protected internal static readonly TraceSource TraceSource
             = new TraceSource(typeof(ApplicationManifestGenerator).Namespace);
 
         protected internal static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
@@ -29,7 +29,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private DirectoryInfo _FromDirectory;
 
-        protected DirectoryInfo FromDirectory
+        public DirectoryInfo FromDirectory
             => _FromDirectory ?? (_FromDirectory = new DirectoryInfo(Settings.FromDirectory?.Length > 0 ? Settings.FromDirectory : Environment.CurrentDirectory));
 
         #endregion FromDirectory
@@ -38,7 +38,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private Uri _FromDirectoryUri;
 
-        protected Uri FromDirectoryUri
+        protected internal Uri FromDirectoryUri
             => _FromDirectoryUri ?? (_FromDirectoryUri = new Uri(FromDirectory.FullName.Trim('/', '\\') + '\\'));
 
         #endregion FromDirectoryUri
@@ -46,7 +46,7 @@ namespace Shipwreck.ClickOnce.Manifest
         #region IncludedFilePaths
 
         private List<string> _IncludedFilePaths;
-        protected List<string> IncludedFilePaths => _IncludedFilePaths ?? (_IncludedFilePaths = GetIncludedFilePaths());
+        public List<string> IncludedFilePaths => _IncludedFilePaths ?? (_IncludedFilePaths = GetIncludedFilePaths());
 
         private List<string> GetIncludedFilePaths()
         {
@@ -79,13 +79,13 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private string _ManifestPath;
 
-        protected string ManifestPath
+        public string ManifestPath
             => _ManifestPath ?? (_ManifestPath = GetManifestPath());
 
         protected abstract string GetManifestPath();
 
         #endregion ManifestPath
-         
+
         #endregion Input Properties
 
         #region Output Properties
@@ -94,7 +94,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private XDocument _Document;
 
-        protected XDocument Document => _Document ?? (_Document = CopyOrCreateManifestDocument());
+        public XDocument Document => _Document ?? (_Document = CopyOrCreateManifestDocument());
 
         protected virtual XDocument CopyOrCreateManifestDocument()
         {
@@ -119,7 +119,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private DirectoryInfo _ToDirectory;
 
-        protected DirectoryInfo ToDirectory
+        public DirectoryInfo ToDirectory
             => _ToDirectory ?? (_ToDirectory = new DirectoryInfo(Settings.ToDirectory?.Length > 0 ? Path.GetFullPath(Settings.ToDirectory) : FromDirectory.FullName));
 
         #endregion ToDirectory
@@ -127,7 +127,7 @@ namespace Shipwreck.ClickOnce.Manifest
         #region ToDirectoryUri
 
         private Uri _ToDirectoryUri;
-        protected Uri ToDirectoryUri => _ToDirectoryUri ?? (_ToDirectoryUri = new Uri(ToDirectory.FullName.Trim('/', '\\') + "\\"));
+        protected internal Uri ToDirectoryUri => _ToDirectoryUri ?? (_ToDirectoryUri = new Uri(ToDirectory.FullName.Trim('/', '\\') + "\\"));
 
         #endregion ToDirectoryUri
 

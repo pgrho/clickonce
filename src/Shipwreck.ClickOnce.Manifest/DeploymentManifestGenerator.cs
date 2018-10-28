@@ -31,7 +31,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private XDocument _ApplictionManifest;
 
-        protected XDocument ApplicationManifest
+        public XDocument ApplicationManifest
             => _ApplictionManifest
             ?? (_ApplictionManifest = ManifestPath == null ? null : XDocument.Load(Path.Combine(FromDirectory.FullName, ManifestPath)));
 
@@ -41,7 +41,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private string _ApplicationName;
 
-        protected string ApplicationName
+        public string ApplicationName
             => _ApplicationName
             ?? (_ApplicationName = Settings.ApplicationName
             ?? (ManifestPath == null ? null
@@ -236,6 +236,11 @@ namespace Shipwreck.ClickOnce.Manifest
 
         protected override void SaveDocument()
         {
+            if (!ToDirectory.Exists)
+            {
+                TraceSource.TraceInformation("Creating Directory :{0}", ToDirectory.FullName);
+                ToDirectory.Create();
+            }
             var p = new Uri(ToDirectoryUri, ApplicationName + ".application").LocalPath;
             TraceSource.TraceInformation("Writing Manifest to {0}", p);
             TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Manifest Content: {0}", Document);
