@@ -7,9 +7,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shipwreck.ClickOnce.Manifes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shipwreck.ClickOnce.Manifest.TestApp", "Shipwreck.ClickOnce.Manifest.TestApp\Shipwreck.ClickOnce.Manifest.TestApp.csproj", "{5C938BC7-F25F-4303-8897-CC3BCA92A117}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shipwreck.ClickOnce.Manifest.Demo", "Shipwreck.ClickOnce.Manifest.Demo\Shipwreck.ClickOnce.Manifest.Demo.csproj", "{60AFF585-69BD-40C0-82B3-1CD9016A82B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shipwreck.ClickOnce.Manifest.Demo", "Shipwreck.ClickOnce.Manifest.Demo\Shipwreck.ClickOnce.Manifest.Demo.csproj", "{60AFF585-69BD-40C0-82B3-1CD9016A82B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shipwreck.ClickOnce.Manifest.Tests", "Shipwreck.ClickOnce.Manifest.Tests\Shipwreck.ClickOnce.Manifest.Tests.csproj", "{7651769E-32BE-4404-90E6-DAC9A04739D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shipwreck.ClickOnce.Manifest.Tests", "Shipwreck.ClickOnce.Manifest.Tests\Shipwreck.ClickOnce.Manifest.Tests.csproj", "{7651769E-32BE-4404-90E6-DAC9A04739D1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0C6761CE-EDD0-4DE5-8D51-731AB9AB07DB}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
