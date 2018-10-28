@@ -14,6 +14,52 @@ ClickOnce Manifest Generator.
   - `PublishSettings`
 3. Instantiate generator and invoke `.Generate()`
 
+### Example
+
+Generate an application manifest by a build result and copy application files.
+```
+// using Shipwreck.ClickOnce.Manifest;
+
+new ApplicationManifestGenerator(new ApplicationManifestSettings()
+{
+    FromDirectory = "bin/Release",
+    ToDirectory = "publish/Application Files/TestApp_1_2_3_4",
+    Version = new Version(1, 2, 3, 4),
+}).Generate();
+```
+
+And then generate a deployment manifest from the application manifest.
+
+```
+new DeploymentManifestGenerator(new DeploymentManifestSettings()
+{
+    FromDirectory = "publish/Application Files/TestApp_1_2_3_4",
+    ToDirectory = "publish",
+    Version = new Version(1, 2, 3, 4),
+
+    ApplicationName = "TestApp",
+
+    Install = true,
+}).Generate();
+```
+
+### Example (`ApplicationPublisher`)
+
+```
+// using Shipwreck.ClickOnce.Manifest;
+
+new ApplicationPublisher(new ApplicationManifestSettings()
+{
+    FromDirectory = "bin/Release",
+    ToDirectory = "publish",
+    Version = new Version(1, 2, 3, 4),
+
+    ApplicationName = "TestApp",
+
+    Install = true,
+}).Generate();
+```
+
 ## Settings
 
 ### Common
@@ -63,12 +109,13 @@ ClickOnce Manifest Generator.
 |`CreateDesktopShortcut`|`bool`|A value indicating whether the application shortcut will be created on the user's Desktop or not .|`false`|
 |`CompatibleFrameworks`|`IList<CompatibleFramework>`|List of the compatible frameworks|Detected by `.exe.config`'s `<startup>` element.|
 
-## TBD
+## TODO
 
 - Update configurations
 - PermissionSet
 - File hash
 - Signing manifest
+- Full minimatch support
 
 ## License
 
