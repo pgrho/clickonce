@@ -28,5 +28,13 @@ namespace Shipwreck.ClickOnce.Manifest
             => (TargetVersion?.GetHashCode() ?? 0)
                ^ (Profile?.GetHashCode() ?? 0)
                ^ (SupportedRuntime?.GetHashCode() ?? 0);
+
+        public CompatibleFramework Clone()
+            => new CompatibleFramework()
+            {
+                TargetVersion = TargetVersion,
+                Profile = Profile,
+                SupportedRuntime = SupportedRuntime
+            };
     }
 }

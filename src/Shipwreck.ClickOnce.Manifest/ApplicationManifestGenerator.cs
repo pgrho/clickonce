@@ -64,6 +64,39 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #endregion EntryPointPath
 
+        #region IconFilePath
+
+        private string _IconFilePath;
+
+        protected string IconFilePath
+            => _IconFilePath ?? (_IconFilePath = Settings.IconFile ?? GetIconFilePath());
+
+        private string GetIconFilePath()
+        {
+            var ep = EntryPointPath;
+            if (ep != null)
+            {
+                var ip = Path.ChangeExtension(ep, ".ico");
+
+                if (IncludedFilePaths.Contains(ip, StringComparer.InvariantCultureIgnoreCase))
+                {
+                    return ip;
+                }
+            }
+
+            foreach (var p in IncludedFilePaths)
+            {
+                if (IsIco(p))
+                {
+                    return p;
+                }
+            }
+
+            return null;
+        }
+
+        #endregion IconFilePath
+
         protected override string GetManifestPath()
             => EntryPointPath == null ? null : EntryPointPath + ".manifest";
 
@@ -149,10 +182,8 @@ namespace Shipwreck.ClickOnce.Manifest
             => Document.Root.GetOrAdd(AsmV2 + "application");
 
         private void GenerateDescriptionElement()
-        {
-            // TODO: v1:description @v2:iconFile
-            Document.Root.GetOrAdd(AsmV1 + "description");
-        }
+            => Document.Root.GetOrAdd(AsmV1 + "description")
+                .SetAttributeValue(AsmV2 + "iconFile", IconFilePath);
 
         private void GenerateEntryPointElement()
         {

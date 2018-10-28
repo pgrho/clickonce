@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Shipwreck.ClickOnce.Manifest
@@ -84,7 +85,7 @@ namespace Shipwreck.ClickOnce.Manifest
         protected abstract string GetManifestPath();
 
         #endregion ManifestPath
-
+         
         #endregion Input Properties
 
         #region Output Properties
@@ -254,5 +255,11 @@ namespace Shipwreck.ClickOnce.Manifest
         }
 
         protected abstract void SaveDocument();
+
+        private static readonly Regex _IconPattern
+            = new Regex(@"^[^/]+\.ico", RegexOptions.IgnoreCase);
+
+        protected static bool IsIco(string p)
+            => _IconPattern.IsMatch(p);
     }
 }

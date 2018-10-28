@@ -23,6 +23,10 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public string EntryPoint { get; set; }
 
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string IconFile { get; set; }
+
         #region Include
 
         public bool ShouldSerializeInclude()
