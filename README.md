@@ -4,6 +4,8 @@ ClickOnce Manifest Generator.
 
 ## Usage
 
+- [NuGet](https://www.nuget.org/packages/Shipwreck.ClickOnce.Manifest)
+
 1. Choose generator.
   - `ApplicationManifestGenerator`: Copies application files and generates `***.exe.manifest`.
   - `DeploymentManifestGenerator`: Generates `***.application`.
