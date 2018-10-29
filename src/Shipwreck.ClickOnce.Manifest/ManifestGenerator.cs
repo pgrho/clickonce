@@ -202,8 +202,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         protected virtual XElement CreateDependencyElement(FileInfo file, string path)
         {
-            var asm = Assembly.ReflectionOnlyLoadFrom(file.FullName);
-            var name = asm.GetName();
+            var name = AssemblyName.GetAssemblyName(file.FullName);
 
             var dep = new XElement(AsmV2 + "dependency");
 

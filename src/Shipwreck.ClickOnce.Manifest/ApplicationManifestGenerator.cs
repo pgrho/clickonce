@@ -167,8 +167,7 @@ namespace Shipwreck.ClickOnce.Manifest
             if (EntryPointPath != null)
             {
                 var fi = new FileInfo(Path.Combine(FromDirectory.FullName, EntryPointPath));
-                var asm = Assembly.ReflectionOnlyLoadFrom(fi.FullName);
-                var name = asm.GetName();
+                var name = AssemblyName.GetAssemblyName(fi.FullName);
 
                 GetOrAddAssemblyIdentityElement(
                     name: EntryPointPath.Replace('/', '\\'),
@@ -195,8 +194,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 var ai = epe.GetOrAdd(AsmV2 + "assemblyIdentity");
                 var fi = new FileInfo(Path.Combine(FromDirectory.FullName, EntryPointPath));
-                var asm = Assembly.ReflectionOnlyLoadFrom(fi.FullName);
-                var name = asm.GetName();
+                var name = AssemblyName.GetAssemblyName(fi.FullName);
                 ai.SetAttributeValue("name", name.Name);
                 ai.SetAttributeValue("version", name.Version.ToString());
                 SetAssemblyAttributes(ai, name);
