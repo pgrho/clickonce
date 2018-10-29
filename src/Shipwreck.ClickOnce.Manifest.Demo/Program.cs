@@ -9,9 +9,9 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
             var src = "../../../../Shipwreck.ClickOnce.Manifest.TestApp/bin/Release";
             var applicationFiles = "../../../publish/Application Files/TestApp_1_2_3_4";
 
-            //var pfx = "../../../../Shipwreck.ClickOnce.Manifest.TestApp/TestApp.pfx";
-            //var pw = "password";
-            string pfx = null, pw = null;
+            var pfx = "../../../../Shipwreck.ClickOnce.Manifest.TestApp/TestApp.pfx";
+            var pw = "password";
+            //string pfx = null, pw = null;
             {
                 var settings = new ApplicationManifestSettings()
                 {

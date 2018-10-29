@@ -32,6 +32,10 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public Version Version { get; set; }
 
+        [DefaultValue(true)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool IncludeHash { get; set; } = true;
+
         #region Certificate
 
         [DefaultValue(null)]

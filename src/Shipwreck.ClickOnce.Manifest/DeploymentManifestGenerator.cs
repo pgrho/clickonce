@@ -217,9 +217,10 @@ namespace Shipwreck.ClickOnce.Manifest
 
             var mp = Uri.UnescapeDataString(ToDirectoryUri.MakeRelativeUri(new Uri(FromDirectoryUri, ManifestPath)).ToString()).Replace('/', '\\');
 
+            var fi = new FileInfo(new Uri(FromDirectoryUri, ManifestPath).LocalPath);
             da.SetAttributeValue("dependencyType", "install");
             da.SetAttributeValue("codebase", mp);
-            da.SetAttributeValue("size", new FileInfo(new Uri(FromDirectoryUri, ManifestPath).LocalPath).Length);
+            da.SetAttributeValue("size", fi.Length);
 
             var sai = Document.Root.Element(AsmV1 + "assemblyIdentity");
 
@@ -230,8 +231,9 @@ namespace Shipwreck.ClickOnce.Manifest
             ai.SetAttributeValue("publicKeyToken", sai?.Attribute("publicKeyToken")?.Value);
             ai.SetAttributeValue("language", sai?.Attribute("language")?.Value);
             ai.SetAttributeValue("processorArchitecture", sai?.Attribute("processorArchitecture")?.Value);
-
             ai.SetAttributeValue("type", "win32");
+
+            AddHash(da, fi);
         }
     }
 }

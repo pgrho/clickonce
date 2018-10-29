@@ -45,6 +45,8 @@ namespace Shipwreck.ClickOnce.Manifest
                 Overwrite = Settings.Overwrite,
                 DeleteDirectory = Settings.DeleteDirectory,
 
+                IncludeHash = Settings.IncludeHash,
+
                 CertificateThumbprint = Settings.CertificateThumbprint,
                 CertificateFileName = Settings.CertificateFileName,
                 CertificatePassword = Settings.CertificatePassword,
@@ -54,7 +56,7 @@ namespace Shipwreck.ClickOnce.Manifest
             var ag = new ApplicationManifestGenerator(ams);
 
             var vs = Settings.Version?.ToString()
-                     ?? ag.Document.Root.Element(ManifestGenerator.AsmV1 + "assemblyIdentity")?.Attribute("version")?.Value 
+                     ?? ag.Document.Root.Element(ManifestGenerator.AsmV1 + "assemblyIdentity")?.Attribute("version")?.Value
                      ?? "1.0.0.0";
 
             var af = $"Application Files/{Path.GetFileNameWithoutExtension(ag.EntryPointPath)}_{vs.Replace('.', '_')}";
@@ -83,6 +85,8 @@ namespace Shipwreck.ClickOnce.Manifest
                 ToDirectory = Settings.ToDirectory,
 
                 Overwrite = Settings.Overwrite,
+
+                IncludeHash = Settings.IncludeHash,
 
                 CertificateThumbprint = Settings.CertificateThumbprint,
                 CertificateFileName = Settings.CertificateFileName,
