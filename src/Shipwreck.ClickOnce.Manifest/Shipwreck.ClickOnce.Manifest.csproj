@@ -3,6 +3,15 @@
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <Version>0.0.1</Version>
+    <Authors>shipwreck.jp</Authors>
+    <Company />
+    <Description>ClickOnce Manifest Generator</Description>
+    <PackageProjectUrl>https://github.com/pgrho/clickonce</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/pgrho/clickonce</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/pgrho/clickonce/master/LICENSE</PackageLicenseUrl>
+    <Copyright>(c) 2018 shipwreck.jp</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
