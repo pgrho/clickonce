@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -131,6 +130,9 @@ namespace Shipwreck.ClickOnce.Manifest
 
             return xd;
         }
+
+        protected override string GetOutputFileName()
+            => new Uri(ToDirectoryUri, ManifestPath).LocalPath;
 
         #endregion Output Properties
 
@@ -265,13 +267,5 @@ namespace Shipwreck.ClickOnce.Manifest
                 ManifestPath != null
                     ? IncludedFilePaths.Except(new[] { ManifestPath }, StringComparer.InvariantCultureIgnoreCase)
                     : IncludedFilePaths);
-
-        protected override void SaveDocument()
-        {
-            var p = new Uri(ToDirectoryUri, ManifestPath).LocalPath;
-            TraceSource.TraceInformation("Writing Manifest to {0}", p);
-            TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Manifest Content: {0}", Document);
-            Document.Save(p);
-        }
     }
 }

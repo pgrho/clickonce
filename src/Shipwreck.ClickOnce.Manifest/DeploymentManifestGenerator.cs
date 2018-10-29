@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -89,6 +87,9 @@ namespace Shipwreck.ClickOnce.Manifest
             d.Root.SetAttributeValue(XNamespace.Xmlns + "co.v1", ClickOnceV1.NamespaceName);
             return d;
         }
+
+        protected override string GetOutputFileName()
+            => new Uri(ToDirectoryUri, ApplicationName + ".application").LocalPath;
 
         public void Generate()
         {
@@ -207,7 +208,6 @@ namespace Shipwreck.ClickOnce.Manifest
                     pe.Add(ce);
                 }
             }
-
         }
 
         protected override void GeneratePathElements()
@@ -232,19 +232,6 @@ namespace Shipwreck.ClickOnce.Manifest
             ai.SetAttributeValue("processorArchitecture", sai?.Attribute("processorArchitecture")?.Value);
 
             ai.SetAttributeValue("type", "win32");
-        }
-
-        protected override void SaveDocument()
-        {
-            if (!ToDirectory.Exists)
-            {
-                TraceSource.TraceInformation("Creating Directory :{0}", ToDirectory.FullName);
-                ToDirectory.Create();
-            }
-            var p = new Uri(ToDirectoryUri, ApplicationName + ".application").LocalPath;
-            TraceSource.TraceInformation("Writing Manifest to {0}", p);
-            TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Manifest Content: {0}", Document);
-            Document.Save(p);
         }
     }
 }

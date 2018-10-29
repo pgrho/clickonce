@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 
 namespace Shipwreck.ClickOnce.Manifest
 {
@@ -131,6 +133,13 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #endregion ToDirectoryUri
 
+        private string _OutputFileName;
+
+        protected string OutputFileName
+            => _OutputFileName ?? (_OutputFileName = GetOutputFileName());
+
+        protected abstract string GetOutputFileName();
+
         #endregion Output Properties
 
         protected XElement GetOrAddAssemblyIdentityElement(
@@ -254,7 +263,31 @@ namespace Shipwreck.ClickOnce.Manifest
             }
         }
 
-        protected abstract void SaveDocument();
+        protected void SaveDocument()
+        {
+            var p = OutputFileName;
+            var d = new DirectoryInfo(Path.GetDirectoryName(p));
+
+            if (!d.Exists)
+            {
+                TraceSource.TraceInformation("Creating Directory :{0}", d.FullName);
+                d.Create();
+            }
+            TraceSource.TraceInformation("Writing Manifest to {0}", p);
+            TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Manifest Content: {0}", Document);
+            Document.Save(p);
+
+            var tu = Settings.TimestampUrl?.Length > 0 ? new Uri(Settings.TimestampUrl) : null;
+            if (Settings.CertificateThumbprint?.Length > 0)
+            {
+                SecurityUtilities.SignFile(Settings.CertificateThumbprint, tu, p);
+            }
+            else if (Settings.CertificateFileName?.Length > 0)
+            {
+                var cert = new X509Certificate2(Settings.CertificateFileName, Settings.CertificatePassword, X509KeyStorageFlags.PersistKeySet);
+                SecurityUtilities.SignFile(cert, tu, p);
+            }
+        }
 
         private static readonly Regex _IconPattern
             = new Regex(@"^[^/]+\.ico", RegexOptions.IgnoreCase);

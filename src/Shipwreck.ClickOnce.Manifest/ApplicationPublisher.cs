@@ -44,6 +44,11 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 Overwrite = Settings.Overwrite,
                 DeleteDirectory = Settings.DeleteDirectory,
+
+                CertificateThumbprint = Settings.CertificateThumbprint,
+                CertificateFileName = Settings.CertificateFileName,
+                CertificatePassword = Settings.CertificatePassword,
+                TimestampUrl = Settings.TimestampUrl,
             };
 
             var ag = new ApplicationManifestGenerator(ams);
@@ -78,6 +83,11 @@ namespace Shipwreck.ClickOnce.Manifest
                 ToDirectory = Settings.ToDirectory,
 
                 Overwrite = Settings.Overwrite,
+
+                CertificateThumbprint = Settings.CertificateThumbprint,
+                CertificateFileName = Settings.CertificateFileName,
+                CertificatePassword = Settings.CertificatePassword,
+                TimestampUrl = Settings.TimestampUrl,
             };
 
             new DeploymentManifestGenerator(dms).Generate();

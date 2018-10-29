@@ -73,6 +73,10 @@ new ApplicationPublisher(new ApplicationManifestSettings()
 |`Version`|`System.Version`|A version of the application.|Use version of the entry point assembly or application manifest.|
 |`Include`|`IList<string>`|Path patterns to specify files included in the application.|(See concrete type)|
 |`Exclude`|`IList<string>`|Path patterns to specify files excluded from the application.|(See concrete type)|
+|`CertificateFileName`|`string`|Path of a `.pfx` certificate to sign the manifest.||
+|`CertificatePassword`|`string`|The password of the `.pfx`.||
+|`CertificateThumbprint`|`string`|The thumbprint of a certificate to sign the manifest.||
+|`TimestampUrl`|`string`|URL of the timestamp server.||
 
 ### Application Manifest
 
@@ -114,7 +118,6 @@ new ApplicationPublisher(new ApplicationManifestSettings()
 - Update configurations
 - PermissionSet
 - File hash
-- Signing manifest
 - Full minimatch support
 
 ## License

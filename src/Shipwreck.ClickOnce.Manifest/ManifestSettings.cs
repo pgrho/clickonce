@@ -32,6 +32,26 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public Version Version { get; set; }
 
+        #region Certificate
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string CertificateFileName { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string CertificatePassword { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string CertificateThumbprint { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string TimestampUrl { get; set; }
+
+        #endregion Certificate
+
         #region Include
 
         private Collection<string> _Include;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace Shipwreck.ClickOnce.Manifest.Demo
 {
@@ -9,6 +8,10 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
         {
             var src = "../../../../Shipwreck.ClickOnce.Manifest.TestApp/bin/Release";
             var applicationFiles = "../../../publish/Application Files/TestApp_1_2_3_4";
+
+            //var pfx = "../../../../Shipwreck.ClickOnce.Manifest.TestApp/TestApp.pfx";
+            //var pw = "password";
+            string pfx = null, pw = null;
             {
                 var settings = new ApplicationManifestSettings()
                 {
@@ -16,7 +19,10 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
                     ToDirectory = applicationFiles,
                     Version = new Version(1, 2, 3, 4),
                     DeleteDirectory = true,
-                    Overwrite = true
+                    Overwrite = true,
+
+                    CertificateFileName = pfx,
+                    CertificatePassword = pw,
                 };
 
                 settings.Include.Add("!**/*.xml");
@@ -40,7 +46,10 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
                     ErrorReportUrl = "http://never.shipwreck.jp/errorReport",
 
                     Install = true,
-                    CreateDesktopShortcut = true
+                    CreateDesktopShortcut = true,
+
+                    CertificateFileName = pfx,
+                    CertificatePassword = pw,
                 };
 
                 new DeploymentManifestGenerator(settings).Generate();
@@ -50,7 +59,7 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
                 {
                     FromDirectory = src,
                     ToDirectory = "../../../publish/auto/",
-                    
+
                     Version = new Version(2, 3, 4, 5),
 
                     DeleteDirectory = true,
@@ -65,7 +74,10 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
                     ErrorReportUrl = "http://never.shipwreck.jp/errorReport",
 
                     Install = true,
-                    CreateDesktopShortcut = true
+                    CreateDesktopShortcut = true,
+
+                    CertificateFileName = pfx,
+                    CertificatePassword = pw,
                 };
                 settings.Include.Add("!**/*.xml");
                 settings.Include.Add("!System.Data.SQLite.dll.config");
