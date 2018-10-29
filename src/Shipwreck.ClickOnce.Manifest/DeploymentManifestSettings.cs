@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -59,6 +60,26 @@ namespace Shipwreck.ClickOnce.Manifest
 
         [DefaultValue(null)]
         [DataMember(EmitDefaultValue = false)]
+        public Version MinimumRequiredVersion { get; set; }
+
+        [DefaultValue(false)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool UpdateAfterStartup { get; set; }
+
+        [DefaultValue(0)]
+        [DataMember(EmitDefaultValue = false)]
+        public int MaximumAge { get; set; }
+
+        [DefaultValue(AgeUnit.Days)]
+        [DataMember(EmitDefaultValue = false)]
+        public AgeUnit MaximumAgeUnit { get; set; } = AgeUnit.Days;
+
+        [DefaultValue(false)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool UpdateBeforeStartup { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
         public string CodeBaseFolder { get; set; }
 
         #endregion Deployment Properties
@@ -104,5 +125,13 @@ namespace Shipwreck.ClickOnce.Manifest
             => Include = DefaultInclude;
 
         #endregion Include
+    }
+
+    [DataContract]
+    public enum AgeUnit
+    {
+        Hours = 0,
+        Days = 1,
+        Weeks = 2,
     }
 }

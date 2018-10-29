@@ -79,6 +79,11 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 Install = Settings.Install,
                 CreateDesktopShortcut = Settings.CreateDesktopShortcut,
+                MinimumRequiredVersion = Settings.MinimumRequiredVersion,
+                UpdateAfterStartup = Settings.UpdateAfterStartup,
+                MaximumAge = Settings.MaximumAge,
+                MaximumAgeUnit = Settings.MaximumAgeUnit,
+                UpdateBeforeStartup = Settings.UpdateBeforeStartup,
                 CodeBaseFolder = Settings.CodeBaseFolder,
 
                 FromDirectory = ams.ToDirectory,

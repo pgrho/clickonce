@@ -140,10 +140,27 @@ namespace Shipwreck.ClickOnce.Manifest
 
             e.SetAttributeValue("install", Settings.Install.ToAttributeValue());
             e.SetAttributeValue(ClickOnceV1 + "createDesktopShortcut", Settings.CreateDesktopShortcut.ToAttributeValue());
+            e.SetAttributeValue("minimumRequiredVersion", Settings.MinimumRequiredVersion?.ToString());
 
             var f = Settings.CodeBaseFolder;
             if (f?.Length > 0)
             {
+                if (Settings.UpdateAfterStartup)
+                {
+                    var exp = e.AddElement(AsmV2 + "subscription")
+                            .AddElement(AsmV2 + "update")
+                            .AddElement(AsmV2 + "expiration");
+
+                    exp.SetAttributeValue("maximumAge", Settings.MaximumAge);
+                    exp.SetAttributeValue("unit", Settings.MaximumAgeUnit.ToString("G").ToLowerInvariant());
+                }
+                if (Settings.UpdateBeforeStartup)
+                {
+                    e.AddElement(AsmV2 + "subscription")
+                        .AddElement(AsmV2 + "update")
+                        .AddElement(AsmV2 + "beforeApplicationStartup");
+                }
+
                 e.GetOrAdd(AsmV2 + "deploymentProvider")
                     .SetAttributeValue(
                         "codebase",

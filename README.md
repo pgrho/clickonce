@@ -112,11 +112,15 @@ new ApplicationPublisher(new ApplicationManifestSettings()
 |`ErrorReportUrl`|`string`|A URL for the error reporting.||
 |`Install`|`bool`|A value indicating whether the application can be used in offline or not.|`false`|
 |`CreateDesktopShortcut`|`bool`|A value indicating whether the application shortcut will be created on the user's Desktop or not .|`false`|
+|`MinimumRequiredVersion`|`System.Version`|A minimum version that is required to run the application.||
+|`UpdateAfterStartup`|`bool`|A value indicating whether the application will check for newer version after startup or not .|`false`|
+|`MaximumAge`|`int`|Interval of checking update after startup. `0` to check every time.|`0`|
+|`MaximumAgeUnit`|`AgeUnit`|The unit of `MaximumAge`. (`Hours`/`Days`/`Weeks`)|`Days`|
+|`UpdateBeforeStartup`|`bool`|A value indicating whether the application will check for newer version before startup or not .|`false`|
 |`CompatibleFrameworks`|`IList<CompatibleFramework>`|List of the compatible frameworks|Detected by `.exe.config`'s `<startup>` element.|
 
 ## TODO
 
-- Update configurations
 - PermissionSet
 - Full minimatch support
 
