@@ -308,7 +308,7 @@ namespace Shipwreck.ClickOnce.Manifest
         }
 
         private static readonly Regex _IconPattern
-            = new Regex(@"^[^/]+\.ico", RegexOptions.IgnoreCase);
+            = new Regex(@"^[^/]+\.ico$", RegexOptions.IgnoreCase);
 
         protected static bool IsIco(string p)
             => _IconPattern.IsMatch(p);

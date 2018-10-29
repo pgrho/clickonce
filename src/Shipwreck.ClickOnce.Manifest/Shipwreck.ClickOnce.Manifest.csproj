@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <Authors>shipwreck.jp</Authors>
     <Company />
     <Description>ClickOnce Manifest Generator</Description>
