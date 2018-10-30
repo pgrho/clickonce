@@ -250,7 +250,7 @@ namespace Shipwreck.ClickOnce.Manifest
             ai.SetAttributeValue("processorArchitecture", sai?.Attribute("processorArchitecture")?.Value);
             ai.SetAttributeValue("type", "win32");
 
-            AddHash(da, fi);
+            AddHashElement(da, fi);
         }
     }
 }

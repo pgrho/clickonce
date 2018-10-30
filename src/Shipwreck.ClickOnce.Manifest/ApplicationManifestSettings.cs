@@ -7,16 +7,11 @@ namespace Shipwreck.ClickOnce.Manifest
     [DataContract]
     public class ApplicationManifestSettings : ManifestSettings
     {
-        internal static readonly string[] DefaultInclude
-            = { "**" };
-
-        internal static readonly string[] DefaultExclude
-            = { @"**/*.pdb", "**/*.application", "app.publish/**" };
-
         public ApplicationManifestSettings()
         {
             Include = DefaultInclude;
             Exclude = DefaultExclude;
+            DependentAssemblies = DefaultDependentAssemblies;
         }
 
         [DefaultValue(null)]
@@ -29,6 +24,9 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #region Include
 
+        internal static readonly string[] DefaultInclude
+            = { "**" };
+
         public override bool ShouldSerializeInclude()
             => Include.SequenceEqual(DefaultInclude);
 
@@ -39,6 +37,9 @@ namespace Shipwreck.ClickOnce.Manifest
 
         #region Exclude
 
+        internal static readonly string[] DefaultExclude
+            = { @"**/*.pdb", "**/*.application", "app.publish/**" };
+
         public override bool ShouldSerializeExclude()
             => Exclude.SequenceEqual(DefaultExclude);
 
@@ -46,5 +47,18 @@ namespace Shipwreck.ClickOnce.Manifest
             => Exclude = DefaultExclude;
 
         #endregion Exclude
+
+        #region DependentAssemblies
+
+        internal static readonly string[] DefaultDependentAssemblies
+            = { @"**/*.exe", "**/*.dll" };
+
+        public override bool ShouldSerializeDependentAssemblies()
+            => DependentAssemblies.SequenceEqual(DefaultDependentAssemblies);
+
+        public override void ResetDependentAssemblies()
+            => DependentAssemblies = DefaultDependentAssemblies;
+
+        #endregion DependentAssemblies
     }
 }

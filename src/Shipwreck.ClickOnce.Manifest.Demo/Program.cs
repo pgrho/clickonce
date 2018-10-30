@@ -78,9 +78,7 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
 
                     CertificateFileName = pfx,
                     CertificatePassword = pw,
-                };
-                settings.Include.Add("!**/*.xml");
-                settings.Include.Add("!System.Data.SQLite.dll.config");
+                }.AddIncludes("!**/*.xml", "!System.Data.SQLite.dll.config");
 
                 new ApplicationPublisher(settings).Generate();
             }

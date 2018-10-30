@@ -91,21 +91,8 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public IList<CompatibleFramework> CompatibleFrameworks
         {
-            get => _CompatibleFrameworks ?? (_CompatibleFrameworks = new Collection<CompatibleFramework>());
-            set
-            {
-                if (value != _CompatibleFrameworks)
-                {
-                    _CompatibleFrameworks?.Clear();
-                    if (value != null)
-                    {
-                        foreach (var c in value)
-                        {
-                            CompatibleFrameworks.Add(c);
-                        }
-                    }
-                }
-            }
+            get => CollectionHelper.GetOrCreate(ref _CompatibleFrameworks);
+            set => CollectionHelper.Set(ref _CompatibleFrameworks, value);
         }
 
         public bool ShouldSerializeCompatibleFrameworks()

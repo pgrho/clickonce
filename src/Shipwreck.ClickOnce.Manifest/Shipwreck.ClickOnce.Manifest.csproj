@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>0.0.3</Version>
+    <Version>0.0.4</Version>
     <Authors>shipwreck.jp</Authors>
     <Company />
     <Description>ClickOnce Manifest Generator</Description>
-    <PackageProjectUrl>https://github.com/pgrho/clickonce</PackageProjectUrl>
+    <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/pgrho/clickonce</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseUrl>https://raw.githubusercontent.com/pgrho/clickonce/master/LICENSE</PackageLicenseUrl>

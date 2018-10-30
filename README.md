@@ -75,6 +75,7 @@ new ApplicationPublisher(new ApplicationManifestSettings()
 |`Version`|`System.Version`|A version of the application.|Use version of the entry point assembly or application manifest.|
 |`Include`|`IList<string>`|Path patterns to specify files included in the application.|(See concrete type)|
 |`Exclude`|`IList<string>`|Path patterns to specify files excluded from the application.|(See concrete type)|
+|`DependentAssemblies`|`IList<string>`|Path patterns to specify files that are a .NET Assembly.|(See concrete type)|
 |`IncludeHash`|`bool`|A value indicating whether hash elements will be generated or not.|`true`|
 |`CertificateFileName`|`string`|Path of a `.pfx` certificate to sign the manifest.||
 |`CertificatePassword`|`string`|The password of the `.pfx`.||
@@ -87,6 +88,7 @@ new ApplicationPublisher(new ApplicationManifestSettings()
 |-|-|-|-|
 |`Include`|`IList<string>`|(Inherited)|`["**"]`|
 |`Exclude`|`IList<string>`|(Inherited)|`["**/*.pdb", "**/*.application", "app.publish/**"]`|
+|`DependentAssemblies`|`IList<string>`|(Inherited)|`["**/*.exe", "**/*.dll"]`|
 |`EntryPoint`|`string`|A relative path to the entry point assembly.|(see below)|
 |`IconFile`|`string`|A relative path to the application icon.|(see below)|
 
@@ -103,8 +105,9 @@ new ApplicationPublisher(new ApplicationManifestSettings()
 
 |Property|Type|Description|Default|
 |-|-|-|-|
-|`Include`|`IList<string>`|(Inherited)|`["**/*.manifest"]`|
-|`Exclude`|`IList<string>`|(Inherited)|`[]`|
+|`Include`|`IList<string>`|(Inherited. Should not change)|`["**/*.manifest"]`|
+|`Exclude`|`IList<string>`|(Inherited. Should not change)|`[]`|
+|`DependentAssemblies`|`IList<string>`|(Inherited. Should not change)|`[]`|
 |`ApplicationManifest`|`string`|A relative path to the apllication manifest|The first `.exe.manifest` file|
 |`ApplicationName`|`string`|The identifier of the ClickOnce application.|Use the application manifest value.|
 |`Publisher`|`string`|The name of the publisher.||

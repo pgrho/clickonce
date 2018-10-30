@@ -41,6 +41,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 Include = Settings.Include,
                 Exclude = Settings.Exclude,
+                DependentAssemblies = Settings.DependentAssemblies,
 
                 Overwrite = Settings.Overwrite,
                 DeleteDirectory = Settings.DeleteDirectory,

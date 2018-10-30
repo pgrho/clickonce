@@ -172,11 +172,12 @@ namespace Shipwreck.ClickOnce.Manifest
         protected void AddPathElements(IEnumerable<string> paths)
         {
             List<XElement> files = null;
+            var dep = Minimatch.Compile(Settings.DependentAssemblies);
             foreach (var p in paths)
             {
                 var fi = new FileInfo(new Uri(FromDirectoryUri, p).LocalPath);
 
-                if (p.EndsWith(".exe") || p.EndsWith(".dll"))
+                if (dep(p))
                 {
                     try
                     {
@@ -218,7 +219,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
             SetAssemblyAttributes(ai, name);
 
-            AddHash(da, file);
+            AddHashElement(da, file);
 
             return dep;
         }
@@ -228,7 +229,7 @@ namespace Shipwreck.ClickOnce.Manifest
             var fe = new XElement(AsmV2 + "file");
             fe.SetAttributeValue("name", p.Replace('/', '\\'));
             fe.SetAttributeValue("size", fi.Length);
-            AddHash(fe, fi);
+            AddHashElement(fe, fi);
             return fe;
         }
 
@@ -241,7 +242,7 @@ namespace Shipwreck.ClickOnce.Manifest
                 name.ProcessorArchitecture.ToAttributeValue());
         }
 
-        protected void AddHash(XElement e, FileInfo f)
+        protected void AddHashElement(XElement e, FileInfo f)
         {
             if (Settings.IncludeHash)
             {

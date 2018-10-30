@@ -11,6 +11,7 @@ namespace Shipwreck.ClickOnce.Manifest
         {
             Include = ApplicationManifestSettings.DefaultInclude;
             Exclude = ApplicationManifestSettings.DefaultExclude;
+            DependentAssemblies = ApplicationManifestSettings.DefaultDependentAssemblies;
         }
 
         [DefaultValue(null)]
@@ -40,5 +41,15 @@ namespace Shipwreck.ClickOnce.Manifest
             => Exclude = ApplicationManifestSettings.DefaultExclude;
 
         #endregion Exclude
+
+        #region DependentAssemblies
+
+        public override bool ShouldSerializeDependentAssemblies()
+            => DependentAssemblies.SequenceEqual(ApplicationManifestSettings.DefaultDependentAssemblies);
+
+        public override void ResetDependentAssemblies()
+            => DependentAssemblies = ApplicationManifestSettings.DefaultDependentAssemblies;
+
+        #endregion DependentAssemblies
     }
 }

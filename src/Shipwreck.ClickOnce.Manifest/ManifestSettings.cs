@@ -63,21 +63,8 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public IList<string> Include
         {
-            get => _Include ?? (_Include = new Collection<string>());
-            set
-            {
-                if (_Include != value)
-                {
-                    _Include?.Clear();
-                    if (value != null)
-                    {
-                        foreach (var s in value)
-                        {
-                            Include.Add(s);
-                        }
-                    }
-                }
-            }
+            get => CollectionHelper.GetOrCreate(ref _Include);
+            set => CollectionHelper.Set(ref _Include, value);
         }
 
         public virtual bool ShouldSerializeInclude()
@@ -95,21 +82,8 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public IList<string> Exclude
         {
-            get => _Exclude ?? (_Exclude = new Collection<string>());
-            set
-            {
-                if (_Exclude != value)
-                {
-                    _Exclude?.Clear();
-                    if (value != null)
-                    {
-                        foreach (var s in value)
-                        {
-                            Exclude.Add(s);
-                        }
-                    }
-                }
-            }
+            get => CollectionHelper.GetOrCreate(ref _Exclude);
+            set => CollectionHelper.Set(ref _Exclude, value);
         }
 
         public virtual bool ShouldSerializeExclude()
@@ -119,5 +93,23 @@ namespace Shipwreck.ClickOnce.Manifest
             => Exclude.Clear();
 
         #endregion Exclude
+
+        #region DependentAssemblies
+
+        private Collection<string> _DependentAssemblies;
+        [DataMember(EmitDefaultValue = false)]
+        public IList<string> DependentAssemblies
+        {
+            get => CollectionHelper.GetOrCreate(ref _DependentAssemblies);
+            set => CollectionHelper.Set(ref _DependentAssemblies, value);
+        }
+
+        public virtual bool ShouldSerializeDependentAssemblies()
+            => _DependentAssemblies?.Count > 0;
+
+        public virtual void ResetDependentAssemblies()
+            => _DependentAssemblies?.Clear();
+
+        #endregion DependentAssemblies
     }
 }
