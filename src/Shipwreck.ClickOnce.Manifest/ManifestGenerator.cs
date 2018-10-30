@@ -269,7 +269,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 foreach (var p in IncludedFilePaths)
                 {
-                    var dest = new FileInfo(new Uri(ToDirectoryUri, p).LocalPath);
+                    var dest = new FileInfo(new Uri(ToDirectoryUri, p + (Settings.MapFileExtensions ? ".deploy" : null)).LocalPath);
                     if (!dest.Directory.Exists)
                     {
                         TraceSource.TraceInformation("Creating Directory :{0}", dest.Directory.FullName);

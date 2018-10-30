@@ -77,6 +77,7 @@ new ApplicationPublisher(new ApplicationManifestSettings()
 |`Exclude`|`IList<string>`|Path patterns to specify files excluded from the application.|(See concrete type)|
 |`DependentAssemblies`|`IList<string>`|Path patterns to specify files that are a .NET Assembly.|(See concrete type)|
 |`IncludeHash`|`bool`|A value indicating whether hash elements will be generated or not.|`true`|
+|`MapFileExtensions`|`bool`|A value indicating whether the application files should be added `.deploy` extension.|`true`|
 |`CertificateFileName`|`string`|Path of a `.pfx` certificate to sign the manifest.||
 |`CertificatePassword`|`string`|The password of the `.pfx`.||
 |`CertificateThumbprint`|`string`|The thumbprint of a certificate to sign the manifest.||

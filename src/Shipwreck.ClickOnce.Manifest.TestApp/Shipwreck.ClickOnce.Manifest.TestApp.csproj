@@ -27,7 +27,7 @@
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>true</UpdateRequired>
-    <MapFileExtensions>false</MapFileExtensions>
+    <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://never.shipwreck.jp/clickonce/</InstallUrl>
     <SupportUrl>http://never.shipwreck.jp/</SupportUrl>
     <ErrorReportUrl>http://never.shipwreck.jp/</ErrorReportUrl>

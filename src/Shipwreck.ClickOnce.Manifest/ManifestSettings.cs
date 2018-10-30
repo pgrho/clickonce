@@ -36,6 +36,10 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public bool IncludeHash { get; set; } = true;
 
+        [DefaultValue(true)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool MapFileExtensions { get; set; } = true;
+
         #region Certificate
 
         [DefaultValue(null)]

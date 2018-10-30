@@ -139,6 +139,7 @@ namespace Shipwreck.ClickOnce.Manifest
             var e = Document.Root.GetOrAdd(AsmV2 + "deployment");
 
             e.SetAttributeValue("install", Settings.Install.ToAttributeValue());
+            e.SetAttributeValue("mapFileExtensions", Settings.MapFileExtensions ? "true" : null);
             e.SetAttributeValue(ClickOnceV1 + "createDesktopShortcut", Settings.CreateDesktopShortcut.ToAttributeValue());
             e.SetAttributeValue("minimumRequiredVersion", Settings.MinimumRequiredVersion?.ToString());
 
@@ -182,7 +183,7 @@ namespace Shipwreck.ClickOnce.Manifest
             if (!cfs.Any())
             {
                 var mp = new Uri(FromDirectoryUri, ManifestPath).LocalPath;
-                var cp = Path.Combine(Path.GetDirectoryName(mp), Path.ChangeExtension(mp, ".config"));
+                var cp = Path.Combine(Path.GetDirectoryName(mp), Path.ChangeExtension(mp, Settings.MapFileExtensions ? ".config.deploy" : ".config"));
 
                 if (File.Exists(cp))
                 {

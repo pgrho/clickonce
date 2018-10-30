@@ -34,6 +34,7 @@ namespace Shipwreck.ClickOnce.Manifest
             {
                 EntryPoint = Settings.EntryPoint,
                 IconFile = Settings.IconFile,
+                MapFileExtensions = Settings.MapFileExtensions,
                 Version = Settings.Version,
 
                 FromDirectory = Settings.FromDirectory,
@@ -69,6 +70,7 @@ namespace Shipwreck.ClickOnce.Manifest
             {
                 ApplicationName = Settings.ApplicationName,
                 Version = Version.Parse(vs),
+                MapFileExtensions = Settings.MapFileExtensions,
 
                 CompatibleFrameworks = Settings.CompatibleFrameworks?.Select(e => e.Clone()).ToList(),
 
