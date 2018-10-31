@@ -13,7 +13,9 @@ namespace Shipwreck.ClickOnce.Manifest
             = ManifestGenerator.TraceSource;
 
         public ApplicationPublisher(PublishSettings settings)
-            => Settings = settings;
+        {
+            Settings = settings;
+        }
 
         protected PublishSettings Settings { get; }
 
@@ -57,14 +59,25 @@ namespace Shipwreck.ClickOnce.Manifest
 
             var ag = new ApplicationManifestGenerator(ams);
 
+            ag.Generate();
+
             var vs = Settings.Version?.ToString()
                      ?? ag.Document.Root.Element(ManifestGenerator.AsmV1 + "assemblyIdentity")?.Attribute("version")?.Value
                      ?? "1.0.0.0";
 
             var af = $"Application Files/{Path.GetFileNameWithoutExtension(ag.EntryPointPath)}_{vs.Replace('.', '_')}";
-            ams.ToDirectory = Settings.ToDirectory?.Length > 0 ? Path.Combine(Settings.ToDirectory, af) : af;
+            var nd = Settings.ToDirectory?.Length > 0 ? Path.Combine(Settings.ToDirectory, af) : af;
 
-            ag.Generate();
+            if (nd != ams.ToDirectory)
+            {
+                var ndi = new DirectoryInfo(nd);
+                if (ndi?.Parent.Exists == false)
+                {
+                    ndi.Parent.Create();
+                }
+
+                Directory.Move(ams.ToDirectory, nd);
+            }
 
             var dms = new DeploymentManifestSettings()
             {
@@ -89,7 +102,7 @@ namespace Shipwreck.ClickOnce.Manifest
                 UpdateBeforeStartup = Settings.UpdateBeforeStartup,
                 CodeBaseFolder = Settings.CodeBaseFolder,
 
-                FromDirectory = ams.ToDirectory,
+                FromDirectory = nd,
                 ToDirectory = Settings.ToDirectory,
 
                 Overwrite = Settings.Overwrite,
