@@ -23,6 +23,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Shipwreck.Minimatch" Version="0.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
   </ItemGroup>
 

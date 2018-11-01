@@ -56,8 +56,8 @@ namespace Shipwreck.ClickOnce.Manifest
         {
             TraceSource.TraceInformation("Searching files from {0}", FromDirectory.FullName);
 
-            var include = Minimatch.Compile(Settings.Include);
-            var exclude = Minimatch.Compile(Settings.Exclude);
+            var include = CompileMinimatch(Settings.Include);
+            var exclude = CompileMinimatch(Settings.Exclude);
 
             var paths = new List<string>();
 
@@ -172,7 +172,7 @@ namespace Shipwreck.ClickOnce.Manifest
         protected void AddPathElements(IEnumerable<string> paths)
         {
             List<XElement> files = null;
-            var dep = Minimatch.Compile(Settings.DependentAssemblies);
+            var dep = CompileMinimatch(Settings.DependentAssemblies);
             foreach (var p in paths)
             {
                 var fi = new FileInfo(new Uri(FromDirectoryUri, p).LocalPath);
@@ -313,5 +313,12 @@ namespace Shipwreck.ClickOnce.Manifest
 
         protected static bool IsIco(string p)
             => _IconPattern.IsMatch(p);
+
+        internal static Func<string, bool> CompileMinimatch(IEnumerable<string> patterns)
+            => new Shipwreck.Minimatch.MatcherFactory()
+            {
+                AllowBackslash = true,
+                IgnoreCase = true
+            }.Compile(patterns);
     }
 }
