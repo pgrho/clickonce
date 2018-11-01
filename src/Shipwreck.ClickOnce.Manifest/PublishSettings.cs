@@ -22,6 +22,22 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public string IconFile { get; set; }
 
+        #region PermissionSet
+
+        [DefaultValue(PermissionSet.FullTrust)]
+        [DataMember(EmitDefaultValue = false)]
+        public PermissionSet PermissionSet { get; set; } = PermissionSet.FullTrust;
+
+        [DefaultValue(false)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool SameSite { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
+        public string CustomPermissionSet { get; set; }
+
+        #endregion PermissionSet
+
         #region Include
 
         public override bool ShouldSerializeInclude()

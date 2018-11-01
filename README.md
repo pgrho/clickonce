@@ -92,6 +92,9 @@ new ApplicationPublisher(new ApplicationManifestSettings()
 |`DependentAssemblies`|`IList<string>`|(Inherited)|`["**/*.exe", "**/*.dll"]`|
 |`EntryPoint`|`string`|A relative path to the entry point assembly.|(see below)|
 |`IconFile`|`string`|A relative path to the application icon.|(see below)|
+|`PermissionSet`|`PermissionSet`|Builtin `PermissionSet` applied to the application. (`FullTrust`/`LocalIntranet`/`Internet`)|`FullTrust`|
+|`SameSite`|`bool`|A value indicating whether the application has `WebPermission` to same origin.|false|
+|`CustomPermissionSet`|`string`|XML string that represents the custom `PermissionSet` applied to the application.||
 
 
 #### EntryPoint detection precedence.
@@ -124,11 +127,6 @@ new ApplicationPublisher(new ApplicationManifestSettings()
 |`MaximumAgeUnit`|`AgeUnit`|The unit of `MaximumAge`. (`Hours`/`Days`/`Weeks`)|`Days`|
 |`UpdateBeforeStartup`|`bool`|A value indicating whether the application will check for newer version before startup or not .|`false`|
 |`CompatibleFrameworks`|`IList<CompatibleFramework>`|List of the compatible frameworks|Detected by `.exe.config`'s `<startup>` element.|
-
-## TODO
-
-- PermissionSet
-- Full minimatch support
 
 ## License
 

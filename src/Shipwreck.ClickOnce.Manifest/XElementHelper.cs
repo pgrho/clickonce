@@ -17,5 +17,11 @@ namespace Shipwreck.ClickOnce.Manifest
 
         public static string ToAttributeValue(this bool b)
             => b ? "true" : "false";
+
+        public static XElement SetAttr(this XElement e, XName name, object value)
+        {
+            e.SetAttributeValue(name, value);
+            return e;
+        }
     }
 }

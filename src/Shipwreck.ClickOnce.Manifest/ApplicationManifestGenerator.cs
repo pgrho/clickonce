@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Security;
+using System.Security.Permissions;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -218,18 +222,170 @@ namespace Shipwreck.ClickOnce.Manifest
 
             var min = sec.GetOrAdd(AsmV2 + "applicationRequestMinimum");
 
-            var ps = min.GetOrAdd(AsmV2 + "PermissionSet");
-            ps.SetAttributeValue("Unrestricted", "true");
-            ps.SetAttributeValue("ID", "Custom");
-            ps.SetAttributeValue("SameSite", "site");
+            var ps = AddPermissionSetElement(min);
+
+            ps.SetAttributeValue("SameSite", Settings.SameSite ? "site" : null);
+
+            var psId = ps.Attribute("ID")?.Value;
+
+            if (psId == null)
+            {
+                ps.SetAttributeValue("ID", psId = "Custom");
+            }
 
             var dar = min.GetOrAdd(AsmV2 + "defaultAssemblyRequest");
-            dar.SetAttributeValue("permissionSetReference", "Custom");
+            dar.SetAttributeValue("permissionSetReference", psId);
 
             var el = sec.GetOrAdd(AsmV3 + "requestedPrivileges")
                 .GetOrAdd(AsmV3 + "requestedExecutionLevel");
             el.SetAttributeValue("level", "asInvoker");
             el.SetAttributeValue("uiAccess", "false");
+        }
+
+        private XElement AddPermissionSetElement(XElement applicationRequestMinimum)
+        {
+            XElement ps;
+            if (Settings.CustomPermissionSet?.Length > 0)
+            {
+                var source = XElement.Parse(Settings.CustomPermissionSet);
+
+                ps = applicationRequestMinimum.GetOrAdd(AsmV2 + source.Name.LocalName);
+                foreach (var a in source.Attributes())
+                {
+                    ps.SetAttributeValue(a.Name, a.Value);
+                }
+
+                foreach (var sc in source.Elements())
+                {
+                    var dc = ps.AddElement(AsmV2 + sc.Name.LocalName);
+
+                    foreach (var a in sc.Attributes())
+                    {
+                        dc.SetAttributeValue(a.Name, a.Value);
+                    }
+                }
+            }
+            else if (Settings.PermissionSet == PermissionSet.Internet)
+            {
+                ps = applicationRequestMinimum.GetOrAdd(AsmV2 + "PermissionSet");
+                ps.SetAttributeValue("class", typeof(NamedPermissionSet).FullName);
+                ps.SetAttributeValue("Name", "Internet");
+                ps.SetAttributeValue("ID", "Custom");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(FileDialogPermission).AssemblyQualifiedName)
+                    .SetAttr("Access", "Open");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(FileDialogPermission).AssemblyQualifiedName)
+                    .SetAttr("Allowed", "ApplicationIsolationByUser")
+                    .SetAttr("UserQuota", "1024000");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(SecurityPermission).AssemblyQualifiedName)
+                    .SetAttr("Flags", "Execution");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(UIPermission).AssemblyQualifiedName)
+                    .SetAttr("Window", "SafeTopLevelWindows")
+                    .SetAttr("Clipboard", "OwnClipboard");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(PrintingPermission).AssemblyQualifiedName)
+                    .SetAttr("Level", "SafePrinting");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(MediaPermission).AssemblyQualifiedName)
+                    .SetAttr("Audio", "SafeAudio")
+                    .SetAttr("Video", "SafeVideo")
+                    .SetAttr("Image", "SafeImage");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(WebBrowserPermission).AssemblyQualifiedName)
+                    .SetAttr("Level", "Safe");
+            }
+            else if (Settings.PermissionSet == PermissionSet.LocalIntranet)
+            {
+                ps = applicationRequestMinimum.GetOrAdd(AsmV2 + "PermissionSet");
+                ps.SetAttributeValue("class", typeof(NamedPermissionSet).FullName);
+                ps.SetAttributeValue("Name", "LocalIntranet");
+                ps.SetAttributeValue("ID", "Custom");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(EnvironmentPermission).AssemblyQualifiedName)
+                    .SetAttr("Read", "USERNAME");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(FileDialogPermission).AssemblyQualifiedName)
+                    .SetAttr("Unrestricted", "true");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(IsolatedStorageFilePermission).AssemblyQualifiedName)
+                    .SetAttr("Allowed", "AssemblyIsolationByUser")
+                    .SetAttr("UserQuota", long.MaxValue)
+                    .SetAttr("Expiry", long.MaxValue)
+                    .SetAttr("Permanent", "True");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(ReflectionPermission).AssemblyQualifiedName)
+                    .SetAttr("Flags", "ReflectionEmit, RestrictedMemberAccess");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(SecurityPermission).AssemblyQualifiedName)
+                    .SetAttr("Flags", "Assertion, Execution, BindingRedirects");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(UIPermission).AssemblyQualifiedName)
+                    .SetAttr("Unrestricted", "true");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(PrintingPermission).AssemblyQualifiedName)
+                    .SetAttr("Level", "DefaultPrinting");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(DnsPermission).AssemblyQualifiedName)
+                    .SetAttr("Unrestricted", "true");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(TypeDescriptorPermission).AssemblyQualifiedName)
+                    .SetAttr("Unrestricted", "true");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(MediaPermission).AssemblyQualifiedName)
+                    .SetAttr("Audio", "SafeAudio")
+                    .SetAttr("Video", "SafeVideo")
+                    .SetAttr("Image", "SafeImage");
+
+                ps.AddElement(AsmV2 + "IPermission")
+                    .SetAttr("version", "1")
+                    .SetAttr("class", typeof(WebBrowserPermission).AssemblyQualifiedName)
+                    .SetAttr("Level", "Safe");
+            }
+            else
+            {
+                ps = applicationRequestMinimum.GetOrAdd(AsmV2 + "PermissionSet");
+                ps.SetAttributeValue("Unrestricted", "true");
+                ps.SetAttributeValue("ID", "Custom");
+            }
+
+            return ps;
         }
 
         private void GenerateDependentOsElement()

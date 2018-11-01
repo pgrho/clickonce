@@ -38,6 +38,9 @@ namespace Shipwreck.ClickOnce.Manifest
                 IconFile = Settings.IconFile,
                 MapFileExtensions = Settings.MapFileExtensions,
                 Version = Settings.Version,
+                PermissionSet = Settings.PermissionSet,
+                SameSite = Settings.SameSite,
+                CustomPermissionSet = Settings.CustomPermissionSet,
 
                 FromDirectory = Settings.FromDirectory,
                 ToDirectory = Settings.ToDirectory?.Length > 0 ? Path.Combine(Settings.ToDirectory, "__application.publish") : "__application.publish",

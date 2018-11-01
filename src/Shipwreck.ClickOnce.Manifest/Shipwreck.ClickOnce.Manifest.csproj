@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>0.0.6</Version>
+    <Version>0.0.7</Version>
     <Authors>shipwreck.jp</Authors>
     <Company />
     <Description>ClickOnce Manifest Generator</Description>
@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
 
   <ItemGroup>
