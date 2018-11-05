@@ -305,7 +305,15 @@ namespace Shipwreck.ClickOnce.Manifest
             }
             else if (Settings.CertificateFileName?.Length > 0)
             {
-                var cert = new X509Certificate2(Settings.CertificateFileName, Settings.CertificatePassword, X509KeyStorageFlags.PersistKeySet);
+                var cert = new X509Certificate2(
+                    Settings.CertificateFileName,
+                    Settings.CertificatePassword,
+#if NET472
+                    X509KeyStorageFlags.EphemeralKeySet
+#else
+                    X509KeyStorageFlags.PersistKeySet
+#endif
+                    );
                 SecurityUtilities.SignFile(cert, tu, p);
             }
         }
