@@ -23,7 +23,9 @@ namespace Shipwreck.ClickOnce.Manifest
         protected internal static readonly XNamespace Dsig = "http://www.w3.org/2000/09/xmldsig#";
 
         protected ManifestGenerator(ManifestSettings settings)
-            => Settings = settings;
+        {
+            Settings = settings;
+        }
 
         protected ManifestSettings Settings { get; }
 
@@ -303,7 +305,7 @@ namespace Shipwreck.ClickOnce.Manifest
             }
             else if (Settings.CertificateFileName?.Length > 0)
             {
-                var cert = new X509Certificate2(Settings.CertificateFileName, Settings.CertificatePassword, X509KeyStorageFlags.PersistKeySet);
+                var cert = new X509Certificate2(Settings.CertificateFileName, Settings.CertificatePassword, X509KeyStorageFlags.MachineKeySet);
                 SecurityUtilities.SignFile(cert, tu, p);
             }
         }
