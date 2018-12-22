@@ -1,11 +1,13 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Shipwreck.ClickOnce.Manifest
 {
     [DataContract]
-    public class ApplicationManifestSettings : ManifestSettings
+    public class ApplicationManifestSettings : ManifestSettings, IFileAssociationSettings
     {
         public ApplicationManifestSettings()
         {
@@ -76,5 +78,24 @@ namespace Shipwreck.ClickOnce.Manifest
             => DependentAssemblies = DefaultDependentAssemblies;
 
         #endregion DependentAssemblies
+
+        #region FileAssociations
+
+        private Collection<FileAssociation> _FileAssociations;
+
+        [DataMember(EmitDefaultValue = false)]
+        public IList<FileAssociation> FileAssociations
+        {
+            get => CollectionHelper.GetOrCreate(ref _FileAssociations);
+            set => CollectionHelper.Set(ref _FileAssociations, value);
+        }
+
+        public bool ShouldSerializeFileAssociations()
+            => _FileAssociations.Any();
+
+        public void ResetFileAssociations()
+            => _FileAssociations.Clear();
+
+        #endregion FileAssociations
     }
 }

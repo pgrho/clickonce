@@ -223,5 +223,70 @@ namespace Shipwreck.ClickOnce.Manifest
         }
 
         #endregion CompatibleFrameworks
+
+        #region FileAssociations
+
+        public static T AddFileAssociation<T>(this T settings, string extension, string description, string progId, string defaultIcon)
+            where T : IFileAssociationSettings
+            => settings.AddFileAssociation(new FileAssociation()
+            {
+                Extension = extension,
+                Description = description,
+                ProgId = progId,
+                DefaultIcon = defaultIcon
+            });
+
+        public static T AddFileAssociation<T>(this T settings, FileAssociation framework)
+            where T : IFileAssociationSettings
+        {
+            settings.FileAssociations.Add(framework);
+            return settings;
+        }
+
+        public static T AddFileAssociations<T>(this T settings, IEnumerable<FileAssociation> frameworks)
+            where T : IFileAssociationSettings
+        {
+            foreach (var p in frameworks)
+            {
+                settings.FileAssociations.Add(p);
+            }
+
+            return settings;
+        }
+
+        public static T AddFileAssociations<T>(this T settings, params FileAssociation[] frameworks)
+            where T : IFileAssociationSettings
+            => settings.AddFileAssociations((IEnumerable<FileAssociation>)frameworks);
+
+        public static T RemoveFileAssociation<T>(this T settings, FileAssociation framework)
+            where T : IFileAssociationSettings
+        {
+            settings.FileAssociations.Remove(framework);
+            return settings;
+        }
+
+        public static T RemoveFileAssociations<T>(this T settings, IEnumerable<FileAssociation> frameworks)
+            where T : IFileAssociationSettings
+        {
+            foreach (var p in frameworks)
+            {
+                settings.FileAssociations.Remove(p);
+            }
+
+            return settings;
+        }
+
+        public static T RemoveFileAssociations<T>(this T settings, params FileAssociation[] frameworks)
+            where T : IFileAssociationSettings
+            => settings.RemoveFileAssociations((IEnumerable<FileAssociation>)frameworks);
+
+        public static T ClearFileAssociations<T>(this T settings)
+            where T : IFileAssociationSettings
+        {
+            settings.FileAssociations.Clear();
+            return settings;
+        }
+
+        #endregion FileAssociations
     }
 }

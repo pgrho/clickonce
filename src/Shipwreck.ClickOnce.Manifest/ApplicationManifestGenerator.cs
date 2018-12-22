@@ -146,6 +146,19 @@ namespace Shipwreck.ClickOnce.Manifest
 
             GeneratePathElements();
 
+            if (Settings.ShouldSerializeFileAssociations())
+            {
+                foreach (var fa in Settings.FileAssociations)
+                {
+                    Document.Root.Add(
+                        new XElement(ClickOnceV1 + "fileAssociation")
+                                .SetAttr("extension", fa.Extension)
+                                .SetAttr("description", fa.Description)
+                                .SetAttr("progid", fa.ProgId)
+                                .SetAttr("defaultIcon", fa.DefaultIcon));
+                }
+            }
+
             CopyFiles();
 
             SaveDocument();

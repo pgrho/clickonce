@@ -12,10 +12,7 @@ namespace Shipwreck.ClickOnce.Manifest
         protected internal static readonly TraceSource TraceSource
             = ManifestGenerator.TraceSource;
 
-        public ApplicationPublisher(PublishSettings settings)
-        {
-            Settings = settings;
-        }
+        public ApplicationPublisher(PublishSettings settings) => Settings = settings;
 
         protected PublishSettings Settings { get; }
 
@@ -58,6 +55,8 @@ namespace Shipwreck.ClickOnce.Manifest
                 CertificateFileName = Settings.CertificateFileName,
                 CertificatePassword = Settings.CertificatePassword,
                 TimestampUrl = Settings.TimestampUrl,
+
+                FileAssociations = Settings.FileAssociations,
             };
 
             var ag = new ApplicationManifestGenerator(ams);

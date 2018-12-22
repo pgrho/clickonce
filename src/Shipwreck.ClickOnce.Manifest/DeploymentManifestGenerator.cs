@@ -9,10 +9,6 @@ namespace Shipwreck.ClickOnce.Manifest
 {
     public class DeploymentManifestGenerator : ManifestGenerator
     {
-        protected internal static readonly XNamespace ClickOnceV1 = "urn:schemas-microsoft-com:clickonce.v1";
-
-        protected internal static readonly XNamespace ClickOnceV2 = "urn:schemas-microsoft-com:clickonce.v2";
-
         private static readonly Regex _ManifestPattern
             = new Regex(@"^[^/]+\.manifest$", RegexOptions.IgnoreCase);
 

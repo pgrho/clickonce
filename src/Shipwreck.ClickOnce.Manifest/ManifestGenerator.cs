@@ -22,10 +22,11 @@ namespace Shipwreck.ClickOnce.Manifest
         protected internal static readonly XNamespace AsmV3 = "urn:schemas-microsoft-com:asm.v3";
         protected internal static readonly XNamespace Dsig = "http://www.w3.org/2000/09/xmldsig#";
 
-        protected ManifestGenerator(ManifestSettings settings)
-        {
-            Settings = settings;
-        }
+        protected internal static readonly XNamespace ClickOnceV1 = "urn:schemas-microsoft-com:clickonce.v1";
+
+        protected internal static readonly XNamespace ClickOnceV2 = "urn:schemas-microsoft-com:clickonce.v2";
+
+        protected ManifestGenerator(ManifestSettings settings) => Settings = settings;
 
         protected ManifestSettings Settings { get; }
 
