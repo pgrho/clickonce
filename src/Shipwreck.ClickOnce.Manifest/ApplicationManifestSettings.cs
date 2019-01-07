@@ -91,10 +91,10 @@ namespace Shipwreck.ClickOnce.Manifest
         }
 
         public bool ShouldSerializeFileAssociations()
-            => _FileAssociations.Any();
+            => _FileAssociations?.Count > 0;
 
         public void ResetFileAssociations()
-            => _FileAssociations.Clear();
+            => _FileAssociations?.Clear();
 
         #endregion FileAssociations
     }

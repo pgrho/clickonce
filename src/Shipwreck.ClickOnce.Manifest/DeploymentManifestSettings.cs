@@ -14,7 +14,9 @@ namespace Shipwreck.ClickOnce.Manifest
             = { "**/*.manifest" };
 
         public DeploymentManifestSettings()
-            => Include = DefaultInclude;
+        {
+            Include = DefaultInclude;
+        }
 
         #region Description Properties
 
@@ -96,10 +98,10 @@ namespace Shipwreck.ClickOnce.Manifest
         }
 
         public bool ShouldSerializeCompatibleFrameworks()
-            => _CompatibleFrameworks.Any();
+            => _CompatibleFrameworks?.Count > 0;
 
         public void ResetCompatibleFrameworks()
-            => _CompatibleFrameworks.Clear();
+            => _CompatibleFrameworks?.Clear();
 
         #endregion CompatibleFrameworks
 
