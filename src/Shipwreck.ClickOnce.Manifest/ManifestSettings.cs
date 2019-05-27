@@ -48,6 +48,10 @@ namespace Shipwreck.ClickOnce.Manifest
 
         [DefaultValue(null)]
         [DataMember(EmitDefaultValue = false)]
+        public byte[] CertificateRawData { get; set; }
+
+        [DefaultValue(null)]
+        [DataMember(EmitDefaultValue = false)]
         public string CertificatePassword { get; set; }
 
         [DefaultValue(null)]

@@ -317,6 +317,19 @@ namespace Shipwreck.ClickOnce.Manifest
                     );
                 SecurityUtilities.SignFile(cert, tu, p);
             }
+            else if (Settings.CertificateRawData?.Length > 0)
+            {
+                var cert = new X509Certificate2(
+                    Settings.CertificateRawData,
+                    Settings.CertificatePassword,
+#if NET472
+                    X509KeyStorageFlags.EphemeralKeySet
+#else
+                    X509KeyStorageFlags.PersistKeySet
+#endif
+                    );
+                SecurityUtilities.SignFile(cert, tu, p);
+            }
         }
 
         private static readonly Regex _IconPattern

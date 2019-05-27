@@ -53,6 +53,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 CertificateThumbprint = Settings.CertificateThumbprint,
                 CertificateFileName = Settings.CertificateFileName,
+                CertificateRawData = Settings.CertificateRawData,
                 CertificatePassword = Settings.CertificatePassword,
                 TimestampUrl = Settings.TimestampUrl,
 
@@ -113,6 +114,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 CertificateThumbprint = Settings.CertificateThumbprint,
                 CertificateFileName = Settings.CertificateFileName,
+                CertificateRawData = Settings.CertificateRawData,
                 CertificatePassword = Settings.CertificatePassword,
                 TimestampUrl = Settings.TimestampUrl,
             };
