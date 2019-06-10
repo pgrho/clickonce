@@ -62,6 +62,12 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public string TimestampUrl { get; set; }
 
+        internal const int DEFAULT_MAX_PASSWORD_RETRY_COUNT = 10;
+
+        [DefaultValue(DEFAULT_MAX_PASSWORD_RETRY_COUNT)]
+        [DataMember(EmitDefaultValue = false)]
+        public int MaxPasswordRetryCount { get; set; } = DEFAULT_MAX_PASSWORD_RETRY_COUNT;
+
         #endregion Certificate
 
         #region Include
@@ -105,6 +111,7 @@ namespace Shipwreck.ClickOnce.Manifest
         #region DependentAssemblies
 
         private Collection<string> _DependentAssemblies;
+
         [DataMember(EmitDefaultValue = false)]
         public IList<string> DependentAssemblies
         {

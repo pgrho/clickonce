@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,7 +8,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 
 namespace Shipwreck.ClickOnce.Manifest
 {
@@ -26,7 +26,10 @@ namespace Shipwreck.ClickOnce.Manifest
 
         protected internal static readonly XNamespace ClickOnceV2 = "urn:schemas-microsoft-com:clickonce.v2";
 
-        protected ManifestGenerator(ManifestSettings settings) => Settings = settings;
+        protected ManifestGenerator(ManifestSettings settings)
+        {
+            Settings = settings;
+        }
 
         protected ManifestSettings Settings { get; }
 
@@ -304,31 +307,58 @@ namespace Shipwreck.ClickOnce.Manifest
             {
                 SecurityUtilities.SignFile(Settings.CertificateThumbprint, tu, p);
             }
-            else if (Settings.CertificateFileName?.Length > 0)
+            else
             {
-                var cert = new X509Certificate2(
-                    Settings.CertificateFileName,
-                    Settings.CertificatePassword,
-#if NET472
-                    X509KeyStorageFlags.EphemeralKeySet
-#else
-                    X509KeyStorageFlags.PersistKeySet
-#endif
-                    );
-                SecurityUtilities.SignFile(cert, tu, p);
+                var cert = GetCertificate();
+                if (cert != null)
+                {
+                    SecurityUtilities.SignFile(cert, tu, p);
+                }
             }
-            else if (Settings.CertificateRawData?.Length > 0)
-            {
-                var cert = new X509Certificate2(
-                    Settings.CertificateRawData,
-                    Settings.CertificatePassword,
+        }
+
+        private X509Certificate2 GetCertificate()
+        {
 #if NET472
-                    X509KeyStorageFlags.EphemeralKeySet
+            const X509KeyStorageFlags flags = X509KeyStorageFlags.EphemeralKeySet;
 #else
-                    X509KeyStorageFlags.PersistKeySet
+            const X509KeyStorageFlags flags = X509KeyStorageFlags.PersistKeySet;
 #endif
-                    );
-                SecurityUtilities.SignFile(cert, tu, p);
+
+            for (var i = 1; ; i++)
+            {
+                try
+                {
+                    if (Settings.CertificateFileName?.Length > 0)
+                    {
+                        return new X509Certificate2(
+                            Settings.CertificateFileName,
+                            Settings.CertificatePassword,
+                            flags);
+                    }
+                    else if (Settings.CertificateRawData?.Length > 0)
+                    {
+                        return new X509Certificate2(
+                            Settings.CertificateRawData,
+                            Settings.CertificatePassword,
+                            flags);
+                    }
+                    return null;
+                }
+                catch (CryptographicException ex)
+                {
+                    var retry = i < Settings.MaxPasswordRetryCount;
+                    TraceSource.TraceEvent(
+                        retry ? TraceEventType.Warning : TraceEventType.Error,
+                        0,
+                        "An Exception was caught while Opening the certificate: {0}",
+                        ex);
+                    if (retry)
+                    {
+                        continue;
+                    }
+                    throw;
+                }
             }
         }
 
