@@ -319,6 +319,10 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private X509Certificate2 GetCertificate()
         {
+            if (Settings.Certificate != null)
+            {
+                return Settings.Certificate;
+            }
 #if NET472
             const X509KeyStorageFlags flags = X509KeyStorageFlags.EphemeralKeySet;
 #else

@@ -54,6 +54,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 IncludeHash = Settings.IncludeHash,
 
+                Certificate = Settings.Certificate,
                 CertificateThumbprint = Settings.CertificateThumbprint,
                 CertificateFileName = Settings.CertificateFileName,
                 CertificateRawData = Settings.CertificateRawData,
@@ -117,6 +118,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
                 IncludeHash = Settings.IncludeHash,
 
+                Certificate = Settings.Certificate,
                 CertificateThumbprint = Settings.CertificateThumbprint,
                 CertificateFileName = Settings.CertificateFileName,
                 CertificateRawData = Settings.CertificateRawData,

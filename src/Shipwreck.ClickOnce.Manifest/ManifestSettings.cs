@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Shipwreck.ClickOnce.Manifest
 {
@@ -42,6 +43,10 @@ namespace Shipwreck.ClickOnce.Manifest
         public bool MapFileExtensions { get; set; } = true;
 
         #region Certificate
+
+        [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public X509Certificate2 Certificate { get; set; }
 
         [DefaultValue(null)]
         [DataMember(EmitDefaultValue = false)]
