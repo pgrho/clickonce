@@ -58,6 +58,7 @@ namespace Shipwreck.ClickOnce.Manifest
                 CertificateFileName = Settings.CertificateFileName,
                 CertificateRawData = Settings.CertificateRawData,
                 CertificatePassword = Settings.CertificatePassword,
+                CertificateSecurePassword = Settings.CertificateSecurePassword,
                 TimestampUrl = Settings.TimestampUrl,
                 MaxPasswordRetryCount = Settings.MaxPasswordRetryCount,
 
@@ -120,6 +121,7 @@ namespace Shipwreck.ClickOnce.Manifest
                 CertificateFileName = Settings.CertificateFileName,
                 CertificateRawData = Settings.CertificateRawData,
                 CertificatePassword = Settings.CertificatePassword,
+                CertificateSecurePassword = Settings.CertificateSecurePassword,
                 TimestampUrl = Settings.TimestampUrl,
                 MaxPasswordRetryCount = Settings.MaxPasswordRetryCount,
             };

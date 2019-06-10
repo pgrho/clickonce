@@ -331,6 +331,13 @@ namespace Shipwreck.ClickOnce.Manifest
                 {
                     if (Settings.CertificateFileName?.Length > 0)
                     {
+                        if (Settings.CertificateSecurePassword != null)
+                        {
+                            return new X509Certificate2(
+                                Settings.CertificateFileName,
+                                Settings.CertificateSecurePassword,
+                                flags);
+                        }
                         return new X509Certificate2(
                             Settings.CertificateFileName,
                             Settings.CertificatePassword,
@@ -338,6 +345,13 @@ namespace Shipwreck.ClickOnce.Manifest
                     }
                     else if (Settings.CertificateRawData?.Length > 0)
                     {
+                        if (Settings.CertificateSecurePassword != null)
+                        {
+                            return new X509Certificate2(
+                                Settings.CertificateRawData,
+                                Settings.CertificateSecurePassword,
+                                flags);
+                        }
                         return new X509Certificate2(
                             Settings.CertificateRawData,
                             Settings.CertificatePassword,

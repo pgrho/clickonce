@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security;
 
 namespace Shipwreck.ClickOnce.Manifest
 {
@@ -53,6 +54,10 @@ namespace Shipwreck.ClickOnce.Manifest
         [DefaultValue(null)]
         [DataMember(EmitDefaultValue = false)]
         public string CertificatePassword { get; set; }
+
+        [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public SecureString CertificateSecurePassword { get; set; }
 
         [DefaultValue(null)]
         [DataMember(EmitDefaultValue = false)]
