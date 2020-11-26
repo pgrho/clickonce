@@ -14,7 +14,7 @@ namespace Shipwreck.ClickOnce.Manifest
     public abstract class ManifestGenerator
     {
         protected internal static readonly TraceSource TraceSource
-            = new TraceSource(typeof(ApplicationManifestGenerator).Namespace);
+            = new(typeof(ApplicationManifestGenerator).Namespace);
 
         protected internal static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
         protected internal static readonly XNamespace AsmV1 = "urn:schemas-microsoft-com:asm.v1";
@@ -381,7 +381,7 @@ namespace Shipwreck.ClickOnce.Manifest
         }
 
         private static readonly Regex _IconPattern
-            = new Regex(@"^[^/]+\.ico$", RegexOptions.IgnoreCase);
+            = new(@"^[^/]+\.ico$", RegexOptions.IgnoreCase);
 
         protected static bool IsIco(string p)
             => _IconPattern.IsMatch(p);

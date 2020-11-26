@@ -14,7 +14,7 @@ namespace Shipwreck.ClickOnce.Manifest
     public class ApplicationManifestGenerator : ManifestGenerator
     {
         private static readonly Regex _EntryPointPattern
-            = new Regex(@"^[^/]+\.exe$", RegexOptions.IgnoreCase);
+            = new(@"^[^/]+\.exe$", RegexOptions.IgnoreCase);
 
         public ApplicationManifestGenerator(ApplicationManifestSettings settings)
             : base(settings)

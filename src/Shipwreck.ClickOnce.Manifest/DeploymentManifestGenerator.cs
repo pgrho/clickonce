@@ -10,7 +10,7 @@ namespace Shipwreck.ClickOnce.Manifest
     public class DeploymentManifestGenerator : ManifestGenerator
     {
         private static readonly Regex _ManifestPattern
-            = new Regex(@"^[^/]+\.manifest$", RegexOptions.IgnoreCase);
+            = new(@"^[^/]+\.manifest$", RegexOptions.IgnoreCase);
 
         public DeploymentManifestGenerator(DeploymentManifestSettings settings)
             : base(settings)
