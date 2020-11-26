@@ -1,24 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;net472</TargetFrameworks>
+    <TargetFrameworks>net45;net472;netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <Version>0.0.16</Version>
+    <Version>0.0.17</Version>
     <Authors>shipwreck.jp</Authors>
     <Company />
     <Description>ClickOnce Manifest Generator</Description>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/pgrho/clickonce</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/pgrho/clickonce/master/LICENSE</PackageLicenseUrl>
-    <Copyright>(c) 2018-2019 shipwreck.jp</Copyright>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <Copyright>(c) 2018-2020 shipwreck.jp</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -26,8 +20,13 @@
     <PackageReference Include="Shipwreck.Minimatch" Version="0.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net45'">
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'!='net45'">
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.8.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'!='netstandard2.0'">
     <Reference Include="WindowsBase" />
   </ItemGroup>
 
