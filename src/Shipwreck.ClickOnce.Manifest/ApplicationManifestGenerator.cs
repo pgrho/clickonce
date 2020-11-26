@@ -30,7 +30,7 @@ namespace Shipwreck.ClickOnce.Manifest
         private string _EntryPointPath;
 
         public string EntryPointPath
-            => _EntryPointPath ?? (_EntryPointPath = GetEntryPointPath());
+            => _EntryPointPath ??= GetEntryPointPath();
 
         private string GetEntryPointPath()
         {
@@ -72,7 +72,7 @@ namespace Shipwreck.ClickOnce.Manifest
         private string _IconFilePath;
 
         public string IconFilePath
-            => _IconFilePath ?? (_IconFilePath = Settings.IconFile ?? GetIconFilePath());
+            => _IconFilePath ??= Settings.IconFile ?? GetIconFilePath();
 
         private string GetIconFilePath()
         {

@@ -26,8 +26,7 @@ namespace Shipwreck.ClickOnce.Manifest
         private XDocument _ApplictionManifest;
 
         public XDocument ApplicationManifest
-            => _ApplictionManifest
-            ?? (_ApplictionManifest = ManifestPath == null ? null : XDocument.Load(Path.Combine(FromDirectory.FullName, ManifestPath)));
+            => _ApplictionManifest ??= ManifestPath == null ? null : XDocument.Load(Path.Combine(FromDirectory.FullName, ManifestPath));
 
         #endregion ApplicationManifest
 
@@ -36,10 +35,9 @@ namespace Shipwreck.ClickOnce.Manifest
         private string _ApplicationName;
 
         public string ApplicationName
-            => _ApplicationName
-            ?? (_ApplicationName = Settings.ApplicationName
+            => _ApplicationName ??= Settings.ApplicationName
             ?? (ManifestPath == null ? null
-            : Path.GetFileNameWithoutExtension(ApplicationManifest?.Root?.Element(AsmV2 + "assemblyIdentity")?.Attribute("name")?.Value ?? Path.GetFileNameWithoutExtension(ManifestPath))));
+            : Path.GetFileNameWithoutExtension(ApplicationManifest?.Root?.Element(AsmV2 + "assemblyIdentity")?.Attribute("name")?.Value ?? Path.GetFileNameWithoutExtension(ManifestPath)));
 
         #endregion ApplicationName
 

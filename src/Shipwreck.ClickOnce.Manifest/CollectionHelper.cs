@@ -6,7 +6,7 @@ namespace Shipwreck.ClickOnce.Manifest
     internal static class CollectionHelper
     {
         public static Collection<T> GetOrCreate<T>(ref Collection<T> field)
-            => field ?? (field = new Collection<T>());
+            => field ??= new Collection<T>();
 
         public static void Set<T>(ref Collection<T> field, IEnumerable<T> value)
         {

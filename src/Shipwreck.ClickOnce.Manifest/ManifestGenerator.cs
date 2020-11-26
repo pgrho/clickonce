@@ -40,7 +40,7 @@ namespace Shipwreck.ClickOnce.Manifest
         private DirectoryInfo _FromDirectory;
 
         public DirectoryInfo FromDirectory
-            => _FromDirectory ?? (_FromDirectory = new DirectoryInfo(Settings.FromDirectory?.Length > 0 ? Settings.FromDirectory : Environment.CurrentDirectory));
+            => _FromDirectory ??= new DirectoryInfo(Settings.FromDirectory?.Length > 0 ? Settings.FromDirectory : Environment.CurrentDirectory);
 
         #endregion FromDirectory
 
@@ -49,14 +49,14 @@ namespace Shipwreck.ClickOnce.Manifest
         private Uri _FromDirectoryUri;
 
         protected internal Uri FromDirectoryUri
-            => _FromDirectoryUri ?? (_FromDirectoryUri = new Uri(FromDirectory.FullName.Trim('/', '\\') + '\\'));
+            => _FromDirectoryUri ??= new Uri(FromDirectory.FullName.Trim('/', '\\') + '\\');
 
         #endregion FromDirectoryUri
 
         #region IncludedFilePaths
 
         private List<string> _IncludedFilePaths;
-        public List<string> IncludedFilePaths => _IncludedFilePaths ?? (_IncludedFilePaths = GetIncludedFilePaths());
+        public List<string> IncludedFilePaths => _IncludedFilePaths ??= GetIncludedFilePaths();
 
         private List<string> GetIncludedFilePaths()
         {
@@ -90,7 +90,7 @@ namespace Shipwreck.ClickOnce.Manifest
         private string _ManifestPath;
 
         public string ManifestPath
-            => _ManifestPath ?? (_ManifestPath = GetManifestPath());
+            => _ManifestPath ??= GetManifestPath();
 
         protected abstract string GetManifestPath();
 
@@ -104,7 +104,7 @@ namespace Shipwreck.ClickOnce.Manifest
 
         private XDocument _Document;
 
-        public XDocument Document => _Document ?? (_Document = CopyOrCreateManifestDocument());
+        public XDocument Document => _Document ??= CopyOrCreateManifestDocument();
 
         protected virtual XDocument CopyOrCreateManifestDocument()
         {
@@ -131,21 +131,21 @@ namespace Shipwreck.ClickOnce.Manifest
         private DirectoryInfo _ToDirectory;
 
         public DirectoryInfo ToDirectory
-            => _ToDirectory ?? (_ToDirectory = new DirectoryInfo(Settings.ToDirectory?.Length > 0 ? Path.GetFullPath(Settings.ToDirectory) : FromDirectory.FullName));
+            => _ToDirectory ??= new DirectoryInfo(Settings.ToDirectory?.Length > 0 ? Path.GetFullPath(Settings.ToDirectory) : FromDirectory.FullName);
 
         #endregion ToDirectory
 
         #region ToDirectoryUri
 
         private Uri _ToDirectoryUri;
-        protected internal Uri ToDirectoryUri => _ToDirectoryUri ?? (_ToDirectoryUri = new Uri(ToDirectory.FullName.Trim('/', '\\') + "\\"));
+        protected internal Uri ToDirectoryUri => _ToDirectoryUri ??= new Uri(ToDirectory.FullName.Trim('/', '\\') + "\\");
 
         #endregion ToDirectoryUri
 
         private string _OutputFileName;
 
         protected string OutputFileName
-            => _OutputFileName ?? (_OutputFileName = GetOutputFileName());
+            => _OutputFileName ??= GetOutputFileName();
 
         protected abstract string GetOutputFileName();
 
@@ -195,7 +195,7 @@ namespace Shipwreck.ClickOnce.Manifest
                     }
                 }
 
-                (files ?? (files = new List<XElement>())).Add(CreateFileElement(p, fi));
+                (files ??= new List<XElement>()).Add(CreateFileElement(p, fi));
             }
 
             if (files != null)
