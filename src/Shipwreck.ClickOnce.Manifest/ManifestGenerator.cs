@@ -254,10 +254,8 @@ namespace Shipwreck.ClickOnce.Manifest
             {
                 var h = e.AddElement(AsmV2 + "hash");
                 h.AddElement(Dsig + "DigestMethod").SetAttributeValue("Algorithm", "http://www.w3.org/2000/09/xmldsig#sha256");
-                using (var sha = SHA256.Create())
-                {
-                    h.AddElement(Dsig + "DigestValue").Value = Convert.ToBase64String(sha.ComputeHash(File.ReadAllBytes(f.FullName)));
-                }
+                using var sha = SHA256.Create();
+                h.AddElement(Dsig + "DigestValue").Value = Convert.ToBase64String(sha.ComputeHash(File.ReadAllBytes(f.FullName)));
             }
         }
 
