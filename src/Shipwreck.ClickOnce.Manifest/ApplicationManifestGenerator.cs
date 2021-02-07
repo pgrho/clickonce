@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
@@ -142,26 +143,61 @@ namespace Shipwreck.ClickOnce.Manifest
 
         public void Generate()
         {
-            GenerateMetadataElements();
-
-            GeneratePathElements();
-
-            if (Settings.ShouldSerializeFileAssociations())
+            string launcherPath = null;
+            if (Settings.GeneratesLauncher && EntryPointPath != null)
             {
-                foreach (var fa in Settings.FileAssociations)
+#if NET45
+                throw new NotSupportedException($"{nameof(Settings.GeneratesLauncher)}=true is not supported on net45");
+#else
+                var fi = new FileInfo(Path.Combine(FromDirectory.FullName, EntryPointPath));
+                var lb = new Microsoft.Build.Tasks.Deployment.ManifestUtilities.LauncherBuilder(
+                    Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft SDKs", "ClickOnce Bootstrapper", "Engine", "Launcher.exe"));
+                var msgs = lb.Build(EntryPointPath, FromDirectory.FullName);
+
+                if (!msgs.Succeeded)
                 {
-                    Document.Root.Add(
-                        new XElement(ClickOnceV1 + "fileAssociation")
-                                .SetAttr("extension", fa.Extension)
-                                .SetAttr("description", fa.Description)
-                                .SetAttr("progid", fa.ProgId)
-                                .SetAttr("defaultIcon", fa.DefaultIcon));
+                    throw new Exception("Failed to build Launcher.exe." + string.Concat(msgs.Messages.Select(e => $"{Environment.NewLine}[{e.Severity}]{e.Message}")));
                 }
+                launcherPath = Path.Combine(FromDirectory.FullName, "Launcher.exe");
+                IncludedFilePaths.Add("Launcher.exe");
+#endif
             }
 
-            CopyFiles();
+            try
+            {
+                GenerateMetadataElements();
 
-            SaveDocument();
+                GeneratePathElements();
+
+                if (Settings.ShouldSerializeFileAssociations())
+                {
+                    foreach (var fa in Settings.FileAssociations)
+                    {
+                        Document.Root.Add(
+                            new XElement(ClickOnceV1 + "fileAssociation")
+                                    .SetAttr("extension", fa.Extension)
+                                    .SetAttr("description", fa.Description)
+                                    .SetAttr("progid", fa.ProgId)
+                                    .SetAttr("defaultIcon", fa.DefaultIcon));
+                    }
+                }
+
+                CopyFiles();
+
+                SaveDocument();
+            }
+            finally
+            {
+                if (launcherPath != null)
+                {
+                    try
+                    {
+                        File.Delete(launcherPath);
+                    }
+                    catch { }
+                }
+            }
         }
 
         #region GenerateMetadataElements
@@ -207,17 +243,19 @@ namespace Shipwreck.ClickOnce.Manifest
         {
             if (EntryPointPath != null)
             {
+                var path = Settings.GeneratesLauncher ? "Launcher.exe" : EntryPointPath;
+
                 var epe = Document.Root.GetOrAdd(AsmV2 + "entryPoint");
 
                 var ai = epe.GetOrAdd(AsmV2 + "assemblyIdentity");
-                var fi = new FileInfo(Path.Combine(FromDirectory.FullName, EntryPointPath));
+                var fi = new FileInfo(Path.Combine(FromDirectory.FullName, path));
                 var name = AssemblyName.GetAssemblyName(fi.FullName);
                 ai.SetAttributeValue("name", name.Name);
                 ai.SetAttributeValue("version", name.Version.ToString());
                 SetAssemblyAttributes(ai, name);
 
                 var cl = epe.GetOrAdd(AsmV2 + "commandLine");
-                cl.SetAttributeValue("file", EntryPointPath);
+                cl.SetAttributeValue("file", path);
                 // TODO: parameters
                 cl.SetAttributeValue("parameters", "");
             }
@@ -434,5 +472,70 @@ namespace Shipwreck.ClickOnce.Manifest
                 ManifestPath != null
                     ? IncludedFilePaths.Except(new[] { ManifestPath }, StringComparer.InvariantCultureIgnoreCase)
                     : IncludedFilePaths);
+
+        protected void AddPathElements(IEnumerable<string> paths)
+        {
+            List<XElement> files = null;
+
+            var dep = Settings.GeneratesLauncher ? e => e == "Launcher.exe" : CompileMinimatch(Settings.DependentAssemblies);
+            foreach (var p in paths)
+            {
+                var fi = new FileInfo(new Uri(FromDirectoryUri, p).LocalPath);
+
+                if (dep(p))
+                {
+                    try
+                    {
+                        Document.Root.Add(CreateDependencyElement(fi, p));
+                        continue;
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                (files ??= new List<XElement>()).Add(CreateFileElement(p, fi));
+            }
+
+            if (files != null)
+            {
+                foreach (var f in files)
+                {
+                    Document.Root.Add(f);
+                }
+            }
+        }
+
+        protected virtual XElement CreateDependencyElement(FileInfo file, string path)
+        {
+            var name = AssemblyName.GetAssemblyName(file.FullName);
+
+            var dep = new XElement(AsmV2 + "dependency");
+
+            var da = dep.AddElement(AsmV2 + "dependentAssembly");
+            da.SetAttributeValue("dependencyType", "install");
+            da.SetAttributeValue("allowDelayedBinding", "true");
+            da.SetAttributeValue("codebase", path.Replace('/', '\\'));
+            da.SetAttributeValue("size", file.Length);
+
+            var ai = da.AddElement(AsmV2 + "assemblyIdentity");
+            ai.SetAttributeValue("name", name.Name);
+            ai.SetAttributeValue("version", name.Version);
+
+            SetAssemblyAttributes(ai, name);
+
+            AddHashElement(da, file);
+
+            return dep;
+        }
+
+        protected XElement CreateFileElement(string p, FileInfo fi)
+        {
+            var fe = new XElement(AsmV2 + "file");
+            fe.SetAttributeValue("name", p.Replace('/', '\\'));
+            fe.SetAttributeValue("size", fi.Length);
+            AddHashElement(fe, fi);
+            return fe;
+        }
     }
 }

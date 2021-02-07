@@ -24,6 +24,10 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public string IconFile { get; set; }
 
+        [DefaultValue(DEFAULT_GENERATES_LAUNCHER)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool GeneratesLauncher { get; set; } = DEFAULT_GENERATES_LAUNCHER;
+
         #region PermissionSet
 
         [DefaultValue(PermissionSet.FullTrust)]

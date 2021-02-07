@@ -36,6 +36,7 @@ namespace Shipwreck.ClickOnce.Manifest
             {
                 EntryPoint = Settings.EntryPoint,
                 IconFile = Settings.IconFile,
+                GeneratesLauncher = Settings.GeneratesLauncher,
                 MapFileExtensions = Settings.MapFileExtensions,
                 Version = Settings.Version,
                 PermissionSet = Settings.PermissionSet,

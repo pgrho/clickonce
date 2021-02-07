@@ -17,7 +17,8 @@ namespace Shipwreck.ClickOnce.Manifest.Demo
                 {
                     FromDirectory = src,
                     ToDirectory = applicationFiles,
-                    Version = new Version(1, 2, 3, 4),
+                    GeneratesLauncher = true,
+                    Version = new Version(1, 2, 3, 5),
                     DeleteDirectory = true,
                     Overwrite = true,
 

@@ -24,6 +24,14 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public string IconFile { get; set; }
 
+        [DefaultValue(DEFAULT_GENERATES_LAUNCHER)]
+        [DataMember(EmitDefaultValue = false)]
+        public bool GeneratesLauncher { get; set; } = DEFAULT_GENERATES_LAUNCHER;
+
+        [DefaultValue(DEFAULT_VISUAL_STUDIO_VERSION)]
+        [DataMember(EmitDefaultValue = false)]
+        public string VisualStudioVersion { get; set; } = DEFAULT_VISUAL_STUDIO_VERSION;
+
         #region PermissionSet
 
         [DefaultValue(PermissionSet.FullTrust)]
@@ -38,9 +46,9 @@ namespace Shipwreck.ClickOnce.Manifest
         [DataMember(EmitDefaultValue = false)]
         public string CustomPermissionSet { get; set; }
 
-        #endregion PermissionSet
+#endregion PermissionSet
 
-        #region Include
+#region Include
 
         internal static readonly string[] DefaultInclude
             = { "**" };
@@ -51,9 +59,9 @@ namespace Shipwreck.ClickOnce.Manifest
         public override void ResetInclude()
             => Include = DefaultInclude;
 
-        #endregion Include
+#endregion Include
 
-        #region Exclude
+#region Exclude
 
         internal static readonly string[] DefaultExclude
             = { @"**/*.pdb", "**/*.application", "app.publish/**" };
@@ -64,9 +72,9 @@ namespace Shipwreck.ClickOnce.Manifest
         public override void ResetExclude()
             => Exclude = DefaultExclude;
 
-        #endregion Exclude
+#endregion Exclude
 
-        #region DependentAssemblies
+#region DependentAssemblies
 
         internal static readonly string[] DefaultDependentAssemblies
             = { @"**/*.exe", "**/*.dll" };
@@ -77,9 +85,9 @@ namespace Shipwreck.ClickOnce.Manifest
         public override void ResetDependentAssemblies()
             => DependentAssemblies = DefaultDependentAssemblies;
 
-        #endregion DependentAssemblies
+#endregion DependentAssemblies
 
-        #region FileAssociations
+#region FileAssociations
 
         private Collection<FileAssociation> _FileAssociations;
 
@@ -96,6 +104,6 @@ namespace Shipwreck.ClickOnce.Manifest
         public void ResetFileAssociations()
             => _FileAssociations?.Clear();
 
-        #endregion FileAssociations
+#endregion FileAssociations
     }
 }
