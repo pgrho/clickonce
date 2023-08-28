@@ -10,8 +10,11 @@ internal static class AssemblyNameHelper
         : null;
 
     public static string ToAttributeValue(this ProcessorArchitecture processorArchitecture)
-        => processorArchitecture == ProcessorArchitecture.MSIL ? "msil"
-            : processorArchitecture == ProcessorArchitecture.X86 ? "x86"
-            : processorArchitecture == ProcessorArchitecture.Amd64 ? "amd64"
-            : null;
+        => processorArchitecture switch
+        {
+            ProcessorArchitecture.X86 => "x86",
+            ProcessorArchitecture.Amd64 => "amd64",
+            ProcessorArchitecture.MSIL => "msil",
+            _ => "msil"
+        };
 }
