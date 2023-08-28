@@ -9,6 +9,8 @@ public class ApplicationPublisher
     protected internal static readonly TraceSource TraceSource
         = ManifestGenerator.TraceSource;
 
+    private Action<string> _Log;
+
     public ApplicationPublisher(PublishSettings settings)
     {
         Settings = settings;
@@ -16,15 +18,16 @@ public class ApplicationPublisher
 
     protected PublishSettings Settings { get; }
 
-    public void Generate()
+    public void Generate(Action<string> log = null)
     {
+        _Log = log;
         var td = new DirectoryInfo(Settings.ToDirectory);
 
         if (Settings.DeleteDirectory)
         {
             if (td.Exists)
             {
-                TraceSource.TraceInformation("Removing Directory :{0}", td.FullName);
+                TraceInformation("Removing Directory :{0}", td.FullName);
                 td.Delete(true);
             }
         }
@@ -66,7 +69,7 @@ public class ApplicationPublisher
 
         var ag = new ApplicationManifestGenerator(ams);
 
-        ag.Generate();
+        ag.Generate(log: log);
 
         var vs = Settings.Version?.ToString()
                  ?? ag.Document.Root.Element(ManifestGenerator.AsmV1 + "assemblyIdentity")?.Attribute("version")?.Value
@@ -126,6 +129,23 @@ public class ApplicationPublisher
             MaxPasswordRetryCount = Settings.MaxPasswordRetryCount,
         };
 
-        new DeploymentManifestGenerator(dms).Generate();
+        new DeploymentManifestGenerator(dms).Generate(log: log);
+    }
+
+    protected void TraceInformation(string message) => TraceEvent(TraceEventType.Information, message);
+    protected void TraceInformation(string format, params object[] args) => TraceEvent(TraceEventType.Information, format, args);
+    protected void TraceError(string message) => TraceEvent(TraceEventType.Error, message);
+    protected void TraceError(string format, params object[] args) => TraceEvent(TraceEventType.Error, format, args);
+
+    protected virtual void TraceEvent(TraceEventType eventType, string message)
+    {
+        TraceSource?.TraceEvent(eventType, 0, message);
+        _Log?.Invoke(typeof(ApplicationPublisher).FullName + "[" + eventType + "]: " + message);
+    }
+
+    protected virtual void TraceEvent(TraceEventType eventType, string format, params object[] args)
+    {
+        TraceSource?.TraceEvent(eventType, 0, format, args);
+        _Log?.Invoke(typeof(ApplicationPublisher).FullName + "[" + eventType + "]: " + string.Format(format, args));
     }
 }

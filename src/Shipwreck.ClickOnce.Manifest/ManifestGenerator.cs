@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Permissions;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -12,6 +13,8 @@ public abstract class ManifestGenerator
 {
     protected internal static readonly TraceSource TraceSource
         = new(typeof(ApplicationManifestGenerator).Namespace);
+
+    protected Action<string> Log { get; set; }
 
     protected internal static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
     protected internal static readonly XNamespace AsmV1 = "urn:schemas-microsoft-com:asm.v1";
@@ -57,7 +60,7 @@ public abstract class ManifestGenerator
 
     private List<string> GetIncludedFilePaths()
     {
-        TraceSource.TraceInformation("Searching files from {0}", FromDirectory.FullName);
+        TraceInformation("Searching files from {0}", FromDirectory.FullName);
 
         var include = CompileMinimatch(Settings.Include);
         var exclude = CompileMinimatch(Settings.Exclude);
@@ -71,7 +74,7 @@ public abstract class ManifestGenerator
 
             if (include(path) && !exclude(path))
             {
-                TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Found: {0}", path);
+                TraceEvent(TraceEventType.Verbose, "Found: {0}", path);
 
                 paths.Add(path);
             }
@@ -200,7 +203,7 @@ public abstract class ManifestGenerator
         {
             if (Settings.DeleteDirectory && ToDirectory.Exists)
             {
-                TraceSource.TraceInformation("Removing Directory :{0}", ToDirectory.FullName);
+                TraceInformation("Removing Directory :{0}", ToDirectory.FullName);
                 ToDirectory.Delete(true);
             }
 
@@ -209,11 +212,11 @@ public abstract class ManifestGenerator
                 var dest = new FileInfo(new Uri(ToDirectoryUri, p + (Settings.MapFileExtensions ? ".deploy" : null)).LocalPath);
                 if (!dest.Directory.Exists)
                 {
-                    TraceSource.TraceInformation("Creating Directory :{0}", dest.Directory.FullName);
+                    TraceInformation("Creating Directory :{0}", dest.Directory.FullName);
                     dest.Directory.Create();
                 }
 
-                TraceSource.TraceInformation("Copying file :{0}", p);
+                TraceInformation("Copying file :{0}", p);
                 File.Copy(new Uri(FromDirectoryUri, p).LocalPath, dest.FullName, Settings.Overwrite);
             }
         }
@@ -226,11 +229,11 @@ public abstract class ManifestGenerator
 
         if (!d.Exists)
         {
-            TraceSource.TraceInformation("Creating Directory :{0}", d.FullName);
+            TraceInformation("Creating Directory :{0}", d.FullName);
             d.Create();
         }
-        TraceSource.TraceInformation("Writing Manifest to {0}", p);
-        TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Manifest Content: {0}", Document);
+        TraceInformation("Writing Manifest to {0}", p);
+        TraceEvent(TraceEventType.Verbose, "Manifest Content: {0}", Document);
         Document.Save(p);
 
         var tu = Settings.TimestampUrl?.Length > 0 ? new Uri(Settings.TimestampUrl) : null;
@@ -297,9 +300,8 @@ public abstract class ManifestGenerator
             catch (CryptographicException ex)
             {
                 var retry = i < Settings.MaxPasswordRetryCount;
-                TraceSource.TraceEvent(
+                TraceEvent(
                     retry ? TraceEventType.Warning : TraceEventType.Error,
-                    0,
                     "An Exception was caught while Opening the certificate: {0}",
                     ex);
                 if (retry)
@@ -323,4 +325,15 @@ public abstract class ManifestGenerator
             AllowBackslash = true,
             IgnoreCase = true
         }.Compile(patterns);
+
+    protected void TraceInformation(string message) => TraceEvent(TraceEventType.Information, message);
+    protected void TraceInformation(string format, params object[] args) => TraceEvent(TraceEventType.Information, format, args);
+    protected void TraceError(string message) => TraceEvent(TraceEventType.Error, message);
+    protected void TraceError(string format, params object[] args) => TraceEvent(TraceEventType.Error, format, args);
+
+    protected virtual void TraceEvent(TraceEventType eventType, string message)
+        => TraceSource?.TraceEvent(eventType, 0, message);
+
+    protected virtual void TraceEvent(TraceEventType eventType, string format, params object[] args)
+        => TraceSource?.TraceEvent(eventType, 0, format, args);
 }

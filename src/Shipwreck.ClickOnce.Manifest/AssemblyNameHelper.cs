@@ -15,6 +15,6 @@ internal static class AssemblyNameHelper
             ProcessorArchitecture.X86 => "x86",
             ProcessorArchitecture.Amd64 => "amd64",
             ProcessorArchitecture.MSIL => "msil",
-            _ => "msil"
+            _ => null
         };
 }

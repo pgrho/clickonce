@@ -1,4 +1,5 @@
-﻿using System.Drawing.Printing;
+﻿using System.Diagnostics;
+using System.Drawing.Printing;
 using System.Net;
 using System.Reflection;
 using System.Security;
@@ -12,6 +13,8 @@ public class ApplicationManifestGenerator : ManifestGenerator
 {
     private static readonly Regex _EntryPointPattern
         = new(@"^[^/]+\.exe$", RegexOptions.IgnoreCase);
+
+
 
     public ApplicationManifestGenerator(ApplicationManifestSettings settings)
         : base(settings)
@@ -137,15 +140,16 @@ public class ApplicationManifestGenerator : ManifestGenerator
 
     #endregion Output Properties
 
-    public void Generate()
+    public void Generate(Action<string> log = null)
     {
+        Log = log;
+
         string launcherPath = null;
         if (Settings.GeneratesLauncher && EntryPointPath != null)
         {
 #if NET45
             throw new NotSupportedException($"{nameof(Settings.GeneratesLauncher)}=true is not supported on net45");
 #else
-            var fi = new FileInfo(Path.Combine(FromDirectory.FullName, EntryPointPath));
             var lb = new Microsoft.Build.Tasks.Deployment.ManifestUtilities.LauncherBuilder(
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft SDKs", "ClickOnce Bootstrapper", "Engine", "Launcher.exe"));
@@ -222,7 +226,7 @@ public class ApplicationManifestGenerator : ManifestGenerator
                 name: EntryPointPath.Replace('/', '\\'),
                 version: (Settings.Version ?? name.Version)?.ToString() ?? "1.0.0.0",
                 language: name.CultureName?.Length > 0 ? name.CultureName : "neutral",
-                processorArchitecture: name.ProcessorArchitecture.ToAttributeValue(),
+                processorArchitecture: name.ProcessorArchitecture.ToAttributeValue() ?? "msil",
                 publicKeyToken: name.GetPublicKeyToken().ToAttributeValue(true) ?? "0000000000000000",
                 type: "win32");
         }
@@ -532,5 +536,17 @@ public class ApplicationManifestGenerator : ManifestGenerator
         fe.SetAttributeValue("size", fi.Length);
         AddHashElement(fe, fi);
         return fe;
+    }
+
+    protected override void TraceEvent(TraceEventType eventType, string message)
+    {
+        base.TraceEvent(eventType, message);
+        Log?.Invoke(typeof(ApplicationManifestGenerator).FullName + "[" + eventType + "]: " + message);
+    }
+
+    protected override void TraceEvent(TraceEventType eventType, string format, params object[] args)
+    {
+        base.TraceEvent(eventType, format, args);
+        Log?.Invoke(typeof(ApplicationManifestGenerator).FullName + "[" + eventType + "]: " + string.Format(format, args));
     }
 }

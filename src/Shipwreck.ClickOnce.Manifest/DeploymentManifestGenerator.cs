@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Shipwreck.ClickOnce.Manifest;
@@ -7,6 +8,8 @@ public class DeploymentManifestGenerator : ManifestGenerator
 {
     private static readonly Regex _ManifestPattern
         = new(@"^[^/]+\.manifest$", RegexOptions.IgnoreCase);
+
+    private Action<string> _Log;
 
     public DeploymentManifestGenerator(DeploymentManifestSettings settings)
         : base(settings)
@@ -81,8 +84,10 @@ public class DeploymentManifestGenerator : ManifestGenerator
     protected override string GetOutputFileName()
         => new Uri(ToDirectoryUri, ApplicationName + ".application").LocalPath;
 
-    public void Generate()
+    public void Generate(Action<string> log = null)
     {
+        _Log = log;
+
         GenerateMetadataElements();
 
         GeneratePathElements();
@@ -242,5 +247,17 @@ public class DeploymentManifestGenerator : ManifestGenerator
         ai.SetAttributeValue("type", "win32");
 
         AddHashElement(da, fi);
+    }
+
+    protected override void TraceEvent(TraceEventType eventType, string message)
+    {
+        base.TraceEvent(eventType, message);
+        Log?.Invoke(typeof(DeploymentManifestGenerator).FullName + "[" + eventType + "]: " + message);
+    }
+
+    protected override void TraceEvent(TraceEventType eventType, string format, params object[] args)
+    {
+        base.TraceEvent(eventType, format, args);
+        Log?.Invoke(typeof(DeploymentManifestGenerator).FullName + "[" + eventType + "]: " + string.Format(format, args));
     }
 }
