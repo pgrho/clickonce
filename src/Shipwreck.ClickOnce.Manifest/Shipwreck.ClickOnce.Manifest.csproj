@@ -1,26 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net45;net472;netstandard2.0;netcoreapp3.0</TargetFrameworks> 
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net45;net472;netstandard2.0;netcoreapp3.0</TargetFrameworks>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Shipwreck.Minimatch" Version="0.0.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Shipwreck.Minimatch" Version="0.0.1" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net45'">
-    <Reference Include="Microsoft.Build.Tasks.v4.0" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)'!='net45'">
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.8.0" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)'!='netstandard2.0'">
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)'=='net45'">
+		<Reference Include="Microsoft.Build.Tasks.v4.0" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)'!='net45'">
+		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.8.0" />
+	</ItemGroup>
+	<ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
+		<Reference Include="WindowsBase" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
+	<ItemGroup>
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+	</ItemGroup>
 
 </Project>

@@ -1,17 +1,16 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Shipwreck.ClickOnce.Manifest
+namespace Shipwreck.ClickOnce.Manifest;
+
+[DataContract]
+public enum PermissionSet
 {
-    [DataContract]
-    public enum PermissionSet
-    {
-        [EnumMember]
-        FullTrust,
+    [EnumMember]
+    FullTrust,
 
-        [EnumMember]
-        LocalIntranet,
+    [EnumMember]
+    LocalIntranet,
 
-        [EnumMember]
-        Internet,
-    }
+    [EnumMember]
+    Internet,
 }

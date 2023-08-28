@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
+﻿namespace Shipwreck.ClickOnce.Manifest;
 
-namespace Shipwreck.ClickOnce.Manifest
+public interface IFileAssociationSettings
 {
-    public interface IFileAssociationSettings
-    {
-        IList<FileAssociation> FileAssociations { get; }
-    }
+    IList<FileAssociation> FileAssociations { get; }
 }

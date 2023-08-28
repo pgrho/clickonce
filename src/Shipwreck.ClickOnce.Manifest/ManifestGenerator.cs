@@ -1,330 +1,326 @@
 ﻿using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-namespace Shipwreck.ClickOnce.Manifest
+namespace Shipwreck.ClickOnce.Manifest;
+
+public abstract class ManifestGenerator
 {
-    public abstract class ManifestGenerator
+    protected internal static readonly TraceSource TraceSource
+        = new(typeof(ApplicationManifestGenerator).Namespace);
+
+    protected internal static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
+    protected internal static readonly XNamespace AsmV1 = "urn:schemas-microsoft-com:asm.v1";
+    protected internal static readonly XNamespace AsmV2 = "urn:schemas-microsoft-com:asm.v2";
+    protected internal static readonly XNamespace AsmV3 = "urn:schemas-microsoft-com:asm.v3";
+    protected internal static readonly XNamespace Dsig = "http://www.w3.org/2000/09/xmldsig#";
+
+    protected internal static readonly XNamespace ClickOnceV1 = "urn:schemas-microsoft-com:clickonce.v1";
+
+    protected internal static readonly XNamespace ClickOnceV2 = "urn:schemas-microsoft-com:clickonce.v2";
+
+    protected ManifestGenerator(ManifestSettings settings)
     {
-        protected internal static readonly TraceSource TraceSource
-            = new(typeof(ApplicationManifestGenerator).Namespace);
+        Settings = settings;
+    }
 
-        protected internal static readonly XNamespace Xsi = "http://www.w3.org/2001/XMLSchema-instance";
-        protected internal static readonly XNamespace AsmV1 = "urn:schemas-microsoft-com:asm.v1";
-        protected internal static readonly XNamespace AsmV2 = "urn:schemas-microsoft-com:asm.v2";
-        protected internal static readonly XNamespace AsmV3 = "urn:schemas-microsoft-com:asm.v3";
-        protected internal static readonly XNamespace Dsig = "http://www.w3.org/2000/09/xmldsig#";
+    protected ManifestSettings Settings { get; }
 
-        protected internal static readonly XNamespace ClickOnceV1 = "urn:schemas-microsoft-com:clickonce.v1";
+    #region Input Properties
 
-        protected internal static readonly XNamespace ClickOnceV2 = "urn:schemas-microsoft-com:clickonce.v2";
+    #region FromDirectory
 
-        protected ManifestGenerator(ManifestSettings settings)
+    private DirectoryInfo _FromDirectory;
+
+    public DirectoryInfo FromDirectory
+        => _FromDirectory ??= new DirectoryInfo(Settings.FromDirectory?.Length > 0 ? Settings.FromDirectory : Environment.CurrentDirectory);
+
+    #endregion FromDirectory
+
+    #region FromDirectoryUri
+
+    private Uri _FromDirectoryUri;
+
+    protected internal Uri FromDirectoryUri
+        => _FromDirectoryUri ??= new Uri(FromDirectory.FullName.Trim('/', '\\') + '\\');
+
+    #endregion FromDirectoryUri
+
+    #region IncludedFilePaths
+
+    private List<string> _IncludedFilePaths;
+    public List<string> IncludedFilePaths => _IncludedFilePaths ??= GetIncludedFilePaths();
+
+    private List<string> GetIncludedFilePaths()
+    {
+        TraceSource.TraceInformation("Searching files from {0}", FromDirectory.FullName);
+
+        var include = CompileMinimatch(Settings.Include);
+        var exclude = CompileMinimatch(Settings.Exclude);
+
+        var paths = new List<string>();
+
+        foreach (var f in FromDirectory.EnumerateFiles("*", SearchOption.AllDirectories))
         {
-            Settings = settings;
-        }
+            var fu = new Uri(f.FullName);
+            var path = Uri.UnescapeDataString(FromDirectoryUri.MakeRelativeUri(fu).ToString());
 
-        protected ManifestSettings Settings { get; }
-
-        #region Input Properties
-
-        #region FromDirectory
-
-        private DirectoryInfo _FromDirectory;
-
-        public DirectoryInfo FromDirectory
-            => _FromDirectory ??= new DirectoryInfo(Settings.FromDirectory?.Length > 0 ? Settings.FromDirectory : Environment.CurrentDirectory);
-
-        #endregion FromDirectory
-
-        #region FromDirectoryUri
-
-        private Uri _FromDirectoryUri;
-
-        protected internal Uri FromDirectoryUri
-            => _FromDirectoryUri ??= new Uri(FromDirectory.FullName.Trim('/', '\\') + '\\');
-
-        #endregion FromDirectoryUri
-
-        #region IncludedFilePaths
-
-        private List<string> _IncludedFilePaths;
-        public List<string> IncludedFilePaths => _IncludedFilePaths ??= GetIncludedFilePaths();
-
-        private List<string> GetIncludedFilePaths()
-        {
-            TraceSource.TraceInformation("Searching files from {0}", FromDirectory.FullName);
-
-            var include = CompileMinimatch(Settings.Include);
-            var exclude = CompileMinimatch(Settings.Exclude);
-
-            var paths = new List<string>();
-
-            foreach (var f in FromDirectory.EnumerateFiles("*", SearchOption.AllDirectories))
+            if (include(path) && !exclude(path))
             {
-                var fu = new Uri(f.FullName);
-                var path = Uri.UnescapeDataString(FromDirectoryUri.MakeRelativeUri(fu).ToString());
+                TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Found: {0}", path);
 
-                if (include(path) && !exclude(path))
-                {
-                    TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Found: {0}", path);
-
-                    paths.Add(path);
-                }
-            }
-
-            return paths;
-        }
-
-        #endregion IncludedFilePaths
-
-        #region ManifestPath
-
-        private string _ManifestPath;
-
-        public string ManifestPath
-            => _ManifestPath ??= GetManifestPath();
-
-        protected abstract string GetManifestPath();
-
-        #endregion ManifestPath
-
-        #endregion Input Properties
-
-        #region Output Properties
-
-        #region Document
-
-        private XDocument _Document;
-
-        public XDocument Document => _Document ??= CopyOrCreateManifestDocument();
-
-        protected virtual XDocument CopyOrCreateManifestDocument()
-        {
-            var xd = new XDocument();
-            var root = new XElement(
-                AsmV1 + "assembly",
-                new XAttribute("xmlns", AsmV2.NamespaceName),
-                new XAttribute(XNamespace.Xmlns + "xsi", Xsi.NamespaceName),
-                new XAttribute(XNamespace.Xmlns + "asmv1", AsmV1.NamespaceName),
-                new XAttribute(XNamespace.Xmlns + "dsig", Dsig.NamespaceName));
-
-            root.SetAttributeValue(Xsi + "schemaLocation", "urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd");
-            root.SetAttributeValue("manifestVersion", "1.0");
-
-            xd.Add(root);
-
-            return xd;
-        }
-
-        #endregion Document
-
-        #region ToDirectory
-
-        private DirectoryInfo _ToDirectory;
-
-        public DirectoryInfo ToDirectory
-            => _ToDirectory ??= new DirectoryInfo(Settings.ToDirectory?.Length > 0 ? Path.GetFullPath(Settings.ToDirectory) : FromDirectory.FullName);
-
-        #endregion ToDirectory
-
-        #region ToDirectoryUri
-
-        private Uri _ToDirectoryUri;
-        protected internal Uri ToDirectoryUri => _ToDirectoryUri ??= new Uri(ToDirectory.FullName.Trim('/', '\\') + "\\");
-
-        #endregion ToDirectoryUri
-
-        private string _OutputFileName;
-
-        protected string OutputFileName
-            => _OutputFileName ??= GetOutputFileName();
-
-        protected abstract string GetOutputFileName();
-
-        #endregion Output Properties
-
-        protected XElement GetOrAddAssemblyIdentityElement(
-            string name = null,
-            string version = null,
-            string language = null,
-            string processorArchitecture = null,
-            string publicKeyToken = null,
-            string type = null)
-        {
-            var e = Document.Root.GetOrAdd(AsmV1 + "assemblyIdentity");
-
-            e.SetAttributeValue("name", name);
-            e.SetAttributeValue("version", version);
-            e.SetAttributeValue("language", language);
-            e.SetAttributeValue("processorArchitecture", processorArchitecture);
-            e.SetAttributeValue("publicKeyToken", publicKeyToken);
-            e.SetAttributeValue("type", type);
-
-            return e;
-        }
-
-        #region GeneratePathElements
-
-        protected abstract void GeneratePathElements();
-
-        protected static void SetAssemblyAttributes(XElement ai, AssemblyName name)
-        {
-            ai.SetAttributeValue("language", name.CultureName?.Length > 0 ? name.CultureName : "neutral");
-            ai.SetAttributeValue("publicKeyToken", name.GetPublicKeyToken().ToAttributeValue());
-            ai.SetAttributeValue(
-                "processorArchitecture",
-                name.ProcessorArchitecture.ToAttributeValue());
-        }
-
-        protected void AddHashElement(XElement e, FileInfo f)
-        {
-            if (Settings.IncludeHash)
-            {
-                var h = e.AddElement(AsmV2 + "hash");
-                h.AddElement(Dsig + "DigestMethod").SetAttributeValue("Algorithm", "http://www.w3.org/2000/09/xmldsig#sha256");
-                using var sha = SHA256.Create();
-                h.AddElement(Dsig + "DigestValue").Value = Convert.ToBase64String(sha.ComputeHash(File.ReadAllBytes(f.FullName)));
+                paths.Add(path);
             }
         }
 
-        #endregion GeneratePathElements
+        return paths;
+    }
 
-        protected virtual void CopyFiles()
+    #endregion IncludedFilePaths
+
+    #region ManifestPath
+
+    private string _ManifestPath;
+
+    public string ManifestPath
+        => _ManifestPath ??= GetManifestPath();
+
+    protected abstract string GetManifestPath();
+
+    #endregion ManifestPath
+
+    #endregion Input Properties
+
+    #region Output Properties
+
+    #region Document
+
+    private XDocument _Document;
+
+    public XDocument Document => _Document ??= CopyOrCreateManifestDocument();
+
+    protected virtual XDocument CopyOrCreateManifestDocument()
+    {
+        var xd = new XDocument();
+        var root = new XElement(
+            AsmV1 + "assembly",
+            new XAttribute("xmlns", AsmV2.NamespaceName),
+            new XAttribute(XNamespace.Xmlns + "xsi", Xsi.NamespaceName),
+            new XAttribute(XNamespace.Xmlns + "asmv1", AsmV1.NamespaceName),
+            new XAttribute(XNamespace.Xmlns + "dsig", Dsig.NamespaceName));
+
+        root.SetAttributeValue(Xsi + "schemaLocation", "urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd");
+        root.SetAttributeValue("manifestVersion", "1.0");
+
+        xd.Add(root);
+
+        return xd;
+    }
+
+    #endregion Document
+
+    #region ToDirectory
+
+    private DirectoryInfo _ToDirectory;
+
+    public DirectoryInfo ToDirectory
+        => _ToDirectory ??= new DirectoryInfo(Settings.ToDirectory?.Length > 0 ? Path.GetFullPath(Settings.ToDirectory) : FromDirectory.FullName);
+
+    #endregion ToDirectory
+
+    #region ToDirectoryUri
+
+    private Uri _ToDirectoryUri;
+    protected internal Uri ToDirectoryUri => _ToDirectoryUri ??= new Uri(ToDirectory.FullName.Trim('/', '\\') + "\\");
+
+    #endregion ToDirectoryUri
+
+    private string _OutputFileName;
+
+    protected string OutputFileName
+        => _OutputFileName ??= GetOutputFileName();
+
+    protected abstract string GetOutputFileName();
+
+    #endregion Output Properties
+
+    protected XElement GetOrAddAssemblyIdentityElement(
+        string name = null,
+        string version = null,
+        string language = null,
+        string processorArchitecture = null,
+        string publicKeyToken = null,
+        string type = null)
+    {
+        var e = Document.Root.GetOrAdd(AsmV1 + "assemblyIdentity");
+
+        e.SetAttributeValue("name", name);
+        e.SetAttributeValue("version", version);
+        e.SetAttributeValue("language", language);
+        e.SetAttributeValue("processorArchitecture", processorArchitecture);
+        e.SetAttributeValue("publicKeyToken", publicKeyToken);
+        e.SetAttributeValue("type", type);
+
+        return e;
+    }
+
+    #region GeneratePathElements
+
+    protected abstract void GeneratePathElements();
+
+    protected static void SetAssemblyAttributes(XElement ai, AssemblyName name)
+    {
+        ai.SetAttributeValue("language", name.CultureName?.Length > 0 ? name.CultureName : "neutral");
+        ai.SetAttributeValue("publicKeyToken", name.GetPublicKeyToken().ToAttributeValue());
+        ai.SetAttributeValue(
+            "processorArchitecture",
+            name.ProcessorArchitecture.ToAttributeValue());
+    }
+
+    protected void AddHashElement(XElement e, FileInfo f)
+    {
+        if (Settings.IncludeHash)
         {
-            if (!FromDirectory.FullName.Equals(ToDirectory.FullName, StringComparison.InvariantCultureIgnoreCase))
+            var h = e.AddElement(AsmV2 + "hash");
+            h.AddElement(Dsig + "DigestMethod").SetAttributeValue("Algorithm", "http://www.w3.org/2000/09/xmldsig#sha256");
+            using var sha = SHA256.Create();
+            h.AddElement(Dsig + "DigestValue").Value = Convert.ToBase64String(sha.ComputeHash(File.ReadAllBytes(f.FullName)));
+        }
+    }
+
+    #endregion GeneratePathElements
+
+    protected virtual void CopyFiles()
+    {
+        if (!FromDirectory.FullName.Equals(ToDirectory.FullName, StringComparison.InvariantCultureIgnoreCase))
+        {
+            if (Settings.DeleteDirectory && ToDirectory.Exists)
             {
-                if (Settings.DeleteDirectory && ToDirectory.Exists)
+                TraceSource.TraceInformation("Removing Directory :{0}", ToDirectory.FullName);
+                ToDirectory.Delete(true);
+            }
+
+            foreach (var p in IncludedFilePaths)
+            {
+                var dest = new FileInfo(new Uri(ToDirectoryUri, p + (Settings.MapFileExtensions ? ".deploy" : null)).LocalPath);
+                if (!dest.Directory.Exists)
                 {
-                    TraceSource.TraceInformation("Removing Directory :{0}", ToDirectory.FullName);
-                    ToDirectory.Delete(true);
+                    TraceSource.TraceInformation("Creating Directory :{0}", dest.Directory.FullName);
+                    dest.Directory.Create();
                 }
 
-                foreach (var p in IncludedFilePaths)
-                {
-                    var dest = new FileInfo(new Uri(ToDirectoryUri, p + (Settings.MapFileExtensions ? ".deploy" : null)).LocalPath);
-                    if (!dest.Directory.Exists)
-                    {
-                        TraceSource.TraceInformation("Creating Directory :{0}", dest.Directory.FullName);
-                        dest.Directory.Create();
-                    }
-
-                    TraceSource.TraceInformation("Copying file :{0}", p);
-                    File.Copy(new Uri(FromDirectoryUri, p).LocalPath, dest.FullName, Settings.Overwrite);
-                }
+                TraceSource.TraceInformation("Copying file :{0}", p);
+                File.Copy(new Uri(FromDirectoryUri, p).LocalPath, dest.FullName, Settings.Overwrite);
             }
         }
+    }
 
-        protected void SaveDocument()
+    protected void SaveDocument()
+    {
+        var p = OutputFileName;
+        var d = new DirectoryInfo(Path.GetDirectoryName(p));
+
+        if (!d.Exists)
         {
-            var p = OutputFileName;
-            var d = new DirectoryInfo(Path.GetDirectoryName(p));
+            TraceSource.TraceInformation("Creating Directory :{0}", d.FullName);
+            d.Create();
+        }
+        TraceSource.TraceInformation("Writing Manifest to {0}", p);
+        TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Manifest Content: {0}", Document);
+        Document.Save(p);
 
-            if (!d.Exists)
+        var tu = Settings.TimestampUrl?.Length > 0 ? new Uri(Settings.TimestampUrl) : null;
+        if (Settings.CertificateThumbprint?.Length > 0)
+        {
+            SecurityUtilities.SignFile(Settings.CertificateThumbprint, tu, p);
+        }
+        else
+        {
+            var cert = GetCertificate();
+            if (cert != null)
             {
-                TraceSource.TraceInformation("Creating Directory :{0}", d.FullName);
-                d.Create();
-            }
-            TraceSource.TraceInformation("Writing Manifest to {0}", p);
-            TraceSource.TraceEvent(TraceEventType.Verbose, 0, "Manifest Content: {0}", Document);
-            Document.Save(p);
-
-            var tu = Settings.TimestampUrl?.Length > 0 ? new Uri(Settings.TimestampUrl) : null;
-            if (Settings.CertificateThumbprint?.Length > 0)
-            {
-                SecurityUtilities.SignFile(Settings.CertificateThumbprint, tu, p);
-            }
-            else
-            {
-                var cert = GetCertificate();
-                if (cert != null)
-                {
-                    SecurityUtilities.SignFile(cert, tu, p);
-                }
+                SecurityUtilities.SignFile(cert, tu, p);
             }
         }
+    }
 
-        private X509Certificate2 GetCertificate()
+    private X509Certificate2 GetCertificate()
+    {
+        if (Settings.Certificate != null)
         {
-            if (Settings.Certificate != null)
-            {
-                return Settings.Certificate;
-            }
+            return Settings.Certificate;
+        }
 #if NET472
-            const X509KeyStorageFlags flags = X509KeyStorageFlags.EphemeralKeySet;
+        const X509KeyStorageFlags flags = X509KeyStorageFlags.EphemeralKeySet;
 #else
-            const X509KeyStorageFlags flags = X509KeyStorageFlags.PersistKeySet;
+        const X509KeyStorageFlags flags = X509KeyStorageFlags.PersistKeySet;
 #endif
 
-            for (var i = 1; ; i++)
+        for (var i = 1; ; i++)
+        {
+            try
             {
-                try
+                if (Settings.CertificateFileName?.Length > 0)
                 {
-                    if (Settings.CertificateFileName?.Length > 0)
+                    if (Settings.CertificateSecurePassword != null)
                     {
-                        if (Settings.CertificateSecurePassword != null)
-                        {
-                            return new X509Certificate2(
-                                Settings.CertificateFileName,
-                                Settings.CertificateSecurePassword,
-                                flags);
-                        }
                         return new X509Certificate2(
                             Settings.CertificateFileName,
-                            Settings.CertificatePassword,
+                            Settings.CertificateSecurePassword,
                             flags);
                     }
-                    else if (Settings.CertificateRawData?.Length > 0)
+                    return new X509Certificate2(
+                        Settings.CertificateFileName,
+                        Settings.CertificatePassword,
+                        flags);
+                }
+                else if (Settings.CertificateRawData?.Length > 0)
+                {
+                    if (Settings.CertificateSecurePassword != null)
                     {
-                        if (Settings.CertificateSecurePassword != null)
-                        {
-                            return new X509Certificate2(
-                                Settings.CertificateRawData,
-                                Settings.CertificateSecurePassword,
-                                flags);
-                        }
                         return new X509Certificate2(
                             Settings.CertificateRawData,
-                            Settings.CertificatePassword,
+                            Settings.CertificateSecurePassword,
                             flags);
                     }
-                    return null;
+                    return new X509Certificate2(
+                        Settings.CertificateRawData,
+                        Settings.CertificatePassword,
+                        flags);
                 }
-                catch (CryptographicException ex)
+                return null;
+            }
+            catch (CryptographicException ex)
+            {
+                var retry = i < Settings.MaxPasswordRetryCount;
+                TraceSource.TraceEvent(
+                    retry ? TraceEventType.Warning : TraceEventType.Error,
+                    0,
+                    "An Exception was caught while Opening the certificate: {0}",
+                    ex);
+                if (retry)
                 {
-                    var retry = i < Settings.MaxPasswordRetryCount;
-                    TraceSource.TraceEvent(
-                        retry ? TraceEventType.Warning : TraceEventType.Error,
-                        0,
-                        "An Exception was caught while Opening the certificate: {0}",
-                        ex);
-                    if (retry)
-                    {
-                        continue;
-                    }
-                    throw;
+                    continue;
                 }
+                throw;
             }
         }
-
-        private static readonly Regex _IconPattern
-            = new(@"^[^/]+\.ico$", RegexOptions.IgnoreCase);
-
-        protected static bool IsIco(string p)
-            => _IconPattern.IsMatch(p);
-
-        internal static Func<string, bool> CompileMinimatch(IEnumerable<string> patterns)
-            => new Shipwreck.Minimatch.MatcherFactory()
-            {
-                AllowBackslash = true,
-                IgnoreCase = true
-            }.Compile(patterns);
     }
+
+    private static readonly Regex _IconPattern
+        = new(@"^[^/]+\.ico$", RegexOptions.IgnoreCase);
+
+    protected static bool IsIco(string p)
+        => _IconPattern.IsMatch(p);
+
+    internal static Func<string, bool> CompileMinimatch(IEnumerable<string> patterns)
+        => new Shipwreck.Minimatch.MatcherFactory()
+        {
+            AllowBackslash = true,
+            IgnoreCase = true
+        }.Compile(patterns);
 }
