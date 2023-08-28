@@ -1,19 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;net472;netstandard2.0;netcoreapp3.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <Version>0.0.18</Version>
-    <Authors>shipwreck.jp</Authors>
-    <Company />
-    <Description>ClickOnce Manifest Generator</Description>
-    <PackageProjectUrl></PackageProjectUrl>
-    <RepositoryUrl>https://github.com/pgrho/clickonce</RepositoryUrl>
+    <TargetFrameworks>net45;net472;netstandard2.0;netcoreapp3.0</TargetFrameworks> 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseUrl></PackageLicenseUrl>
-    <Copyright>(c) 2018-2020 shipwreck.jp</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
