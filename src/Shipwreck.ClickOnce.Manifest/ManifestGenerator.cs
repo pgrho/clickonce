@@ -257,11 +257,7 @@ public abstract class ManifestGenerator
         {
             return Settings.Certificate;
         }
-#if NET472
-        const X509KeyStorageFlags flags = X509KeyStorageFlags.EphemeralKeySet;
-#else
         const X509KeyStorageFlags flags = X509KeyStorageFlags.PersistKeySet;
-#endif
 
         for (var i = 1; ; i++)
         {

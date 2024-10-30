@@ -147,9 +147,6 @@ public class ApplicationManifestGenerator : ManifestGenerator
         string launcherPath = null;
         if (Settings.GeneratesLauncher && EntryPointPath != null)
         {
-#if NET45
-            throw new NotSupportedException($"{nameof(Settings.GeneratesLauncher)}=true is not supported on net45");
-#else
             var lb = new Microsoft.Build.Tasks.Deployment.ManifestUtilities.LauncherBuilder(
                 Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft SDKs", "ClickOnce Bootstrapper", "Engine", "Launcher.exe"));
@@ -161,7 +158,6 @@ public class ApplicationManifestGenerator : ManifestGenerator
             }
             launcherPath = Path.Combine(FromDirectory.FullName, "Launcher.exe");
             IncludedFilePaths.Add("Launcher.exe");
-#endif
         }
 
         try

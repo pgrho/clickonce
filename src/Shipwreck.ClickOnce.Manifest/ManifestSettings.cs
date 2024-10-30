@@ -12,12 +12,12 @@ namespace Shipwreck.ClickOnce.Manifest;
 public abstract class ManifestSettings
 {
     internal const bool DEFAULT_GENERATES_LAUNCHER
-#if NETCOREAPP3_0_OR_GREATER
+#if NET8_0_OR_GREATER
         = true;
 #else
         = false;
 #endif
-    internal const string DEFAULT_VISUAL_STUDIO_VERSION = "16";
+    internal const string DEFAULT_VISUAL_STUDIO_VERSION = "17";
 
     [DefaultValue(null)]
     [DataMember(EmitDefaultValue = false)]

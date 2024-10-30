@@ -1,14 +1,14 @@
 <Project>
 	<PropertyGroup>
-		<LangVersion>10</LangVersion>
-		<Version>0.1.1</Version>
+		<LangVersion>12</LangVersion>
+		<Version>0.2.0</Version>
 		<Authors>shipwreck.jp</Authors>
 		<Company />
 		<Description>ClickOnce Manifest Generator</Description>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://github.com/pgrho/clickonce</RepositoryUrl>
 		<PackageLicenseUrl></PackageLicenseUrl>
-		<Copyright>(c) 2018-2023 shipwreck.jp</Copyright>
+		<Copyright>(c) 2018-2024 shipwreck.jp</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>enable</ImplicitUsings>

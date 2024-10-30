@@ -1,19 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net45;net472;netstandard2.0;netcoreapp3.0</TargetFrameworks>
+		<TargetFrameworks>net48;net8.0</TargetFrameworks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Shipwreck.Minimatch" Version="0.0.1" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)'=='net45'">
-		<Reference Include="Microsoft.Build.Tasks.v4.0" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)'!='net45'">
-		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.8.0" />
+		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.11.4" />
+		<PackageReference Include="System.Security.Permissions" Version="8.0.0" />
 	</ItemGroup>
 	<ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
 		<Reference Include="WindowsBase" />
