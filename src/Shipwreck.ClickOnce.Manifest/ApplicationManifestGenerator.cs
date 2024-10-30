@@ -151,7 +151,9 @@ public class ApplicationManifestGenerator : ManifestGenerator
             {
                 if (rs != null)
                 {
-                    srcPath = Path.Combine(Path.GetTempPath(), "Launcher_" + Process.GetCurrentProcess().Id + "_" + DateTime.Now.Ticks + ".exe");
+                    var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                    Directory.CreateDirectory(tempDir);
+                    srcPath = Path.Combine(tempDir, "Launcher.exe");
                     using (var fs = new FileStream(srcPath, FileMode.Create))
                     {
                         rs.CopyTo(fs);
@@ -171,7 +173,7 @@ public class ApplicationManifestGenerator : ManifestGenerator
             {
                 try
                 {
-                    File.Delete(srcPath);
+                    Directory.Delete(Path.GetDirectoryName(srcPath), true);
                 }
                 catch { }
             }
