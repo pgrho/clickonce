@@ -6,6 +6,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Launcher.exe" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Launcher.exe" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Shipwreck.Minimatch" Version="0.0.1" />
 		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.11.4" />
 		<PackageReference Include="System.Security.Permissions" Version="8.0.0" />

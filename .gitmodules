@@ -1,0 +1,3 @@
+[submodule "submodules/deployment-tools"]
+	path = submodules/deployment-tools
+	url = https://github.com/dotnet/deployment-tools

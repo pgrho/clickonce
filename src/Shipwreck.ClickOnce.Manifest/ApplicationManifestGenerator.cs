@@ -14,8 +14,6 @@ public class ApplicationManifestGenerator : ManifestGenerator
     private static readonly Regex _EntryPointPattern
         = new(@"^[^/]+\.exe$", RegexOptions.IgnoreCase);
 
-
-
     public ApplicationManifestGenerator(ApplicationManifestSettings settings)
         : base(settings)
     { }
@@ -147,15 +145,42 @@ public class ApplicationManifestGenerator : ManifestGenerator
         string launcherPath = null;
         if (Settings.GeneratesLauncher && EntryPointPath != null)
         {
-            var lb = new Microsoft.Build.Tasks.Deployment.ManifestUtilities.LauncherBuilder(
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft SDKs", "ClickOnce Bootstrapper", "Engine", "Launcher.exe"));
+            string srcPath;
+            var shouldClean = false;
+            using (var rs = GetType().Assembly.GetManifestResourceStream(GetType(), "Launcher.exe"))
+            {
+                if (rs != null)
+                {
+                    srcPath = Path.Combine(Path.GetTempPath(), "Launcher_" + Process.GetCurrentProcess().Id + "_" + DateTime.Now.Ticks + ".exe");
+                    using (var fs = new FileStream(srcPath, FileMode.Create))
+                    {
+                        rs.CopyTo(fs);
+                    }
+                    shouldClean = true;
+                }
+                else
+                {
+                    srcPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft SDKs", "ClickOnce Bootstrapper", "Engine", "Launcher.exe");
+                }
+            }
+
+            var lb = new Microsoft.Build.Tasks.Deployment.ManifestUtilities.LauncherBuilder(srcPath);
             var msgs = lb.Build(EntryPointPath, FromDirectory.FullName);
+
+            if (shouldClean)
+            {
+                try
+                {
+                    File.Delete(srcPath);
+                }
+                catch { }
+            }
 
             if (!msgs.Succeeded)
             {
                 throw new Exception("Failed to build Launcher.exe." + string.Concat(msgs.Messages.Select(e => $"{Environment.NewLine}[{e.Severity}]{e.Message}")));
             }
+
             launcherPath = Path.Combine(FromDirectory.FullName, "Launcher.exe");
             IncludedFilePaths.Add("Launcher.exe");
         }
